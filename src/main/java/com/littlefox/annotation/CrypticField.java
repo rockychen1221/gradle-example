@@ -7,20 +7,19 @@ import java.lang.annotation.Target;
 
 /**
  * @decription DecryptField
- * <p>字段解密注解</p>
- * @author Yampery
- * @date 2017/10/24 13:05
+ * <p>字段加/解密注解</p>
+ * @author rockychen
+ * @date 2019/06/19 13:05
  */
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface CrypticField {
     /**
-     * ALL （默认） 加解密
-     * DECRYPT 解密
-     * ENCRYPT 加密
+     * ONLY_ENCRYPT 仅加密,数据库存储为明文，查询出来加密，通过该值进行查询前会先解密
+     * ENCRYPT （默认）加解密,数据库存储为密文，查询解密展示，插入时加密
      */
-    enum Type{ ALL,DECRYPT,ENCRYPT}
+    enum Type{ ENCRYPT,ONLY_ENCRYPT}
 
-    Type type() default Type.ALL;
+    Type type() default Type.ENCRYPT;
 
 }

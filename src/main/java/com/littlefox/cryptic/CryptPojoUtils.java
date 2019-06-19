@@ -5,23 +5,15 @@ import org.apache.commons.lang.StringUtils;
 
 import java.lang.reflect.Field;
 
-/**
- * @decription CryptPojoUtils
- * <p>对象加解密工具
- * 其子类可以通过调用<tt>encrypt(T t)</tt>方法实现自加密，返回参数类型；
- * 调用<tt>decrypt(T t)</tt>实现自解密，返回参数类型；
- * <tt>encrypt</tt>对注解{@link EncryptField}字段有效；
- * <tt>decrypt</tt>对注解{@link DecryptField}字段有效。</p>
- * @author Yampery
- * @date 2017/10/24 13:36
- */
 public class CryptPojoUtils {
+
     /**
-     * 查询后结果字段加解密逻辑
+     * 查询处理
      * @param t
+     * @param type
      * @param <T>
      */
-    public static <T> void selectResultField(T t) {
+    public static <T> void selectField(T t,String type) {
         Field[] declaredFields = t.getClass().getDeclaredFields();
         try {
             if (declaredFields != null && declaredFields.length > 0) {
@@ -34,13 +26,13 @@ public class CryptPojoUtils {
                             continue;
                         }
                         switch (anno.type()){
-                            case DECRYPT:field.set(t, CrypticUtils.getInstance().decrypt(fieldValue));break;
-
-                            case ENCRYPT:field.set(t, CrypticUtils.getInstance().encrypt(fieldValue));break;
-
-                            default:field.set(t, CrypticUtils.getInstance().decrypt(fieldValue));break;
+                            case ONLY_ENCRYPT:
+                                field.set(t,StringUtils.equalsIgnoreCase(type,"result")?CrypticUtils.getInstance().encrypt(fieldValue):CrypticUtils.getInstance().decrypt(fieldValue));
+                                break;
+                            default:
+                                field.set(t,StringUtils.equalsIgnoreCase(type,"result")?CrypticUtils.getInstance().decrypt(fieldValue):CrypticUtils.getInstance().encrypt(fieldValue));
+                                break;
                         }
-
                     }
                 }
             }
@@ -51,40 +43,10 @@ public class CryptPojoUtils {
     }
 
     /**
-     * 查询前参数加解密逻辑
+     * 修改时对注解字段进行加解密处理（对于仅加密注解字段不用处理）
      * @param t
      * @param <T>
      */
-    public static <T> void selectParamField(T t) {
-        Field[] declaredFields = t.getClass().getDeclaredFields();
-        try {
-            if (declaredFields != null && declaredFields.length > 0) {
-                for (Field field : declaredFields) {
-                    if (field.isAnnotationPresent(CrypticField.class) && field.getType().toString().endsWith("String")) {
-                        CrypticField anno =field.getAnnotation(CrypticField.class);
-                        field.setAccessible(true);
-                        String fieldValue = (String) field.get(t);
-                        if(StringUtils.isEmpty(fieldValue)) {
-                            continue;
-                        }
-                        switch (anno.type()){
-                            case DECRYPT:field.set(t, CrypticUtils.getInstance().encrypt(fieldValue));break;
-
-                            case ENCRYPT:field.set(t, CrypticUtils.getInstance().decrypt(fieldValue));break;
-
-                            default:field.set(t, CrypticUtils.getInstance().encrypt(fieldValue));break;
-                        }
-
-                    }
-                }
-            }
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException(e);
-        }
-        // return t;
-    }
-
-
     public static <T> void updateField(T t) {
         Field[] declaredFields = t.getClass().getDeclaredFields();
         try {
@@ -94,14 +56,12 @@ public class CryptPojoUtils {
                         CrypticField anno =field.getAnnotation(CrypticField.class);
                         field.setAccessible(true);
                         String fieldValue = (String) field.get(t);
-                        switch (anno.type()){
-                            case DECRYPT:field.set(t, CrypticUtils.getInstance().encrypt(fieldValue));break;
-                            case ENCRYPT:field.set(t, CrypticUtils.getInstance().encrypt(fieldValue));break;
-                            default:field.set(t, CrypticUtils.getInstance().encrypt(fieldValue));break;
+                        if(StringUtils.isEmpty(fieldValue)) {
+                            continue;
                         }
-
-                        if(StringUtils.isNotEmpty(fieldValue)) {
-                            field.set(t, CrypticUtils.getInstance().decrypt(fieldValue));
+                        switch (anno.type()){
+                            case ONLY_ENCRYPT:break;
+                            default:field.set(t, CrypticUtils.getInstance().encrypt(fieldValue));break;
                         }
                     }
                 }
@@ -111,30 +71,4 @@ public class CryptPojoUtils {
         }
         // return t;
     }
-
-
-    /**
-     * 隐藏号码中间4位
-     * @param t
-     * @param <T>
-     */
-    /*public static <T> void hidePhone(T t) {
-        Field[] declaredFields = t.getClass().getDeclaredFields();
-        try {
-            if (declaredFields != null && declaredFields.length > 0) {
-                for (Field field : declaredFields) {
-                    if (field.isAnnotationPresent(DecryptField.class) && field.getType().toString().endsWith("String")) {
-                        field.setAccessible(true);
-                        String fieldValue = (String)field.get(t);
-                        if(StringUtils.isNotEmpty(fieldValue)) {
-                            // 暂时与解密注解共用一个注解，该注解隐藏手机号中间四位
-                            field.set(t, StringUtils.overlay(fieldValue, "****", 3, 7));
-                        }
-                    }
-                }
-            }
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException(e);
-        }
-    }*/
 }

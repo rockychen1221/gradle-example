@@ -9,10 +9,10 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 public class User {
-    @CrypticField(type = CrypticField.Type.ENCRYPT)
+    @CrypticField(type = CrypticField.Type.ONLY_ENCRYPT)
     private String id;
     @CrypticField
     private String userName;
-    @CrypticField
+    @CrypticField(type = CrypticField.Type.ONLY_ENCRYPT)
     private String phone;
 }

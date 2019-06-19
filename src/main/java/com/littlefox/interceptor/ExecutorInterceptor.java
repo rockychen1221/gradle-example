@@ -2,6 +2,7 @@ package com.littlefox.interceptor;
 
 import com.littlefox.annotation.CrypticField;
 import com.littlefox.cryptic.CryptPojoUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.apache.ibatis.cache.CacheKey;
 import org.apache.ibatis.executor.Executor;
@@ -32,6 +33,7 @@ import java.util.stream.Collectors;
  * <p>
  * MappedStatement 包括了SQL具体操作类型, 需要通过该类型判断当前sql执行过程
  */
+@Slf4j
 @Component
 @Intercepts({
         @Signature(type=Executor.class,method="update",args={MappedStatement.class,Object.class}),
@@ -39,8 +41,6 @@ import java.util.stream.Collectors;
         @Signature(type = Executor.class, method = "query", args = {MappedStatement.class, Object.class, RowBounds.class, ResultHandler.class, CacheKey.class, BoundSql.class})
 })
 public class ExecutorInterceptor implements Interceptor {
-
-    private final Logger log = LoggerFactory.getLogger(ExecutorInterceptor.class);
 
     private String CRYPTIC_SWITCH="1";
 
@@ -51,11 +51,9 @@ public class ExecutorInterceptor implements Interceptor {
      */
     private void  fieldIsCrypt(Object obj,String typeName){
         Field[] fields = obj.getClass().getDeclaredFields();
-
         if (obj instanceof ArrayList<?>) {
             fields =((ArrayList) obj).get(0).getClass().getDeclaredFields();
         }
-
         int len;
         if (null != fields && 0 < (len = fields.length)) {
             // 标记是否有解密注解
@@ -74,11 +72,11 @@ public class ExecutorInterceptor implements Interceptor {
             } /// for end ~
             if (isD) {  // 将含有DecryptField注解的字段解密
                 if (StringUtils.equalsIgnoreCase(typeName, "param")){
-                    CryptPojoUtils.selectParamField(obj);
+                    CryptPojoUtils.selectField(obj,typeName);
                 }
                 if (StringUtils.equalsIgnoreCase(typeName, "result")){
                     List<?> list = (ArrayList<?>) obj;
-                    list.forEach(l -> CryptPojoUtils.selectResultField(l));
+                    list.forEach(l -> CryptPojoUtils.selectField(l,typeName));
                 }
             }
         } /// if end ~
