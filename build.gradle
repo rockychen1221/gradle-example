@@ -40,7 +40,7 @@ processResources {
 repositories {
     //mavenCentral()
     maven {
-        url "http://192.168.1.21:8081/repository/maven-public/"
+        url("http://maven.aliyun.com/nexus/content/groups/public/")
     }
 }
 
@@ -53,7 +53,11 @@ dependencies {
             "mysql:mysql-connector-java:${mysqlVersion}",
             "org.mybatis.spring.boot:mybatis-spring-boot-starter:${mybatisSpringVersion}",
             "commons-codec:commons-codec:${commonsCodecVersion}",
-            "com.github.pagehelper:pagehelper-spring-boot-starter:${pagehelperVersion}"
+            "com.github.pagehelper:pagehelper-spring-boot-starter:${pagehelperVersion}",
+            'org.bouncycastle:bcpkix-jdk15on:1.57', 
+            'commons-codec:commons-codec:1.12'
+
+
     )
     testCompile('org.springframework.boot:spring-boot-starter-test')
     annotationProcessor 'org.projectlombok:lombok:1.18.2'

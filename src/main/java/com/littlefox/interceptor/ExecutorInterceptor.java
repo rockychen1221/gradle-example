@@ -73,8 +73,7 @@ public class ExecutorInterceptor implements Interceptor {
             if (isD) {  // 将含有DecryptField注解的字段解密
                 if (StringUtils.equalsIgnoreCase(typeName, "param")){
                     CryptPojoUtils.selectField(obj,typeName);
-                }
-                if (StringUtils.equalsIgnoreCase(typeName, "result")){
+                } else if (StringUtils.equalsIgnoreCase(typeName, "result")){
                     List<?> list = (ArrayList<?>) obj;
                     list.forEach(l -> CryptPojoUtils.selectField(l,typeName));
                 }
