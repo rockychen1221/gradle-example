@@ -1,22 +1,17 @@
 package com.littlefox.interceptor;
 
-import com.littlefox.annotation.CrypticField;
-import com.littlefox.cryptic.CryptPojoUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.executor.resultset.ResultSetHandler;
 import org.apache.ibatis.plugin.*;
 
-import java.lang.reflect.Field;
 import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Properties;
 
 @Slf4j
 //@Component
-@Intercepts({
+/*@Intercepts({
         @Signature(type = ResultSetHandler.class, method = "handleResultSets", args = { Statement.class })
-})
+})*/
 public class ResultSetHandlerInterceptor implements Interceptor {
 
     @Override

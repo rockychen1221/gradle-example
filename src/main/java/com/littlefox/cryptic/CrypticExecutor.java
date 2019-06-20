@@ -25,16 +25,30 @@ public class CrypticExecutor {
     }
 
     /**
-     * 选择正确的报表查询器并获取数据，最终转化为成报表的数据集
-     *
-     * @return ReportDataSet报表数据集对象
+     * 查询处理
+     * @param t
+     * @param type
+     * @param <T>
      */
-    public void execute(final String paramField) {
+    public <T> void selectField(T t,String type) {
         final CrypticInterface cryptic = this.getCrypticInterface();
         if (cryptic == null) {
-            throw new RuntimeException("未指定报表查询器对象!");
+            throw new RuntimeException("未指定算法对象!");
         }
+        cryptic.selectField(t,type);
+    }
 
+    /**
+     * 修改时对注解字段进行加解密处理（对于仅加密注解字段不用处理）
+     * @param t
+     * @param <T>
+     */
+    public <T> void updateField(T t) {
+        final CrypticInterface cryptic = this.getCrypticInterface();
+        if (cryptic == null) {
+            throw new RuntimeException("未指定算法对象!");
+        }
+        cryptic.updateField(t);
     }
 
     private CrypticInterface getCrypticInterface() {

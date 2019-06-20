@@ -1,7 +1,9 @@
 package com.littlefox.interceptor;
 
 import com.littlefox.annotation.CrypticField;
-import com.littlefox.cryptic.CryptPojoUtils;
+import com.littlefox.cryptic.CrypticExecutor;
+import com.littlefox.cryptic.CrypticInterface;
+import com.littlefox.utils.CrypticUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.apache.ibatis.cache.CacheKey;
@@ -12,14 +14,12 @@ import org.apache.ibatis.mapping.SqlCommandType;
 import org.apache.ibatis.plugin.*;
 import org.apache.ibatis.session.ResultHandler;
 import org.apache.ibatis.session.RowBounds;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Field;
 import java.util.*;
-import java.util.stream.Collectors;
 
 
 /**
@@ -42,7 +42,8 @@ import java.util.stream.Collectors;
 })
 public class ExecutorInterceptor implements Interceptor {
 
-    private String CRYPTIC_SWITCH="1";
+    @Autowired
+    private CrypticUtils crypticUtils;
 
     /**
      *
@@ -50,6 +51,8 @@ public class ExecutorInterceptor implements Interceptor {
      * @param typeName
      */
     private void  fieldIsCrypt(Object obj,String typeName){
+
+
         Field[] fields = obj.getClass().getDeclaredFields();
         if (obj instanceof ArrayList<?>) {
             fields =((ArrayList) obj).get(0).getClass().getDeclaredFields();
@@ -72,10 +75,10 @@ public class ExecutorInterceptor implements Interceptor {
             } /// for end ~
             if (isD) {  // 将含有DecryptField注解的字段解密
                 if (StringUtils.equalsIgnoreCase(typeName, "param")){
-                    CryptPojoUtils.selectField(obj,typeName);
+                    new CrypticExecutor(crypticUtils.getCrypticInterface()).selectField(obj,typeName);
                 } else if (StringUtils.equalsIgnoreCase(typeName, "result")){
                     List<?> list = (ArrayList<?>) obj;
-                    list.forEach(l -> CryptPojoUtils.selectField(l,typeName));
+                    list.forEach(l -> new CrypticExecutor(crypticUtils.getCrypticInterface()).selectField(l,typeName));
                 }
             }
         } /// if end ~
@@ -83,6 +86,7 @@ public class ExecutorInterceptor implements Interceptor {
 
     @Override
     public Object intercept(Invocation invocation) throws Throwable {
+
 
         // 根据签名指定的args顺序获取具体的实现类
         // 1. 获取MappedStatement实例, 并获取当前SQL命令类型
@@ -104,10 +108,13 @@ public class ExecutorInterceptor implements Interceptor {
          * 拦截批量插入操作不仅繁琐，而且为了通用逐一通过反射加密不妥
          * 如果有批量操作，最好在传递参数之前，向list中添加之前就加密
          */
-        if (!"0".equals(CRYPTIC_SWITCH)) {
+        if (!"0".equals(crypticUtils.getCrypticSwitch())) {
             if (StringUtils.equalsIgnoreCase("update", methodName)
                     || StringUtils.equalsIgnoreCase("insert", methodName)) {
-                CryptPojoUtils.updateField(parameter);
+
+                new CrypticExecutor(crypticUtils.getCrypticInterface()).updateField(parameter);
+
+                //CryptPojoUtils.updateField(parameter);
                 return invocation.proceed();
             }
         }

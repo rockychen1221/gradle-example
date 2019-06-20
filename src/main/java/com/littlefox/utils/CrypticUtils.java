@@ -21,20 +21,20 @@ import org.springframework.stereotype.Component;
  * @author trang
  */
 @Component
-public final class CrypticUtils {
+public class CrypticUtils {
 
     private static final Logger log = LoggerFactory.getLogger(CrypticUtils.class);
 
     //私钥
-    private static String privateKey;
+    private  String privateKey;
     //默认算法（适合保存到数据库，不会变化的情况）
-    private static String defalutAlgorithm;
-
+    private  String algorithm;
     // 加解密开关，从配置获取
-    private static String cryptic_switch;
+    private  String cryptic_switch;
 
-    // 默认算法
-    private CrypticInterface crypticInterface;
+    // 默认算法实现类
+    private  CrypticInterface crypticInterface;
+
 
     /**
      * 从配置中获取秘钥
@@ -43,7 +43,7 @@ public final class CrypticUtils {
      */
     @Value("${cryptic.privatekey:0}")
     public void setPrivateKey(String key){
-        CrypticUtils.privateKey = key;
+        this.privateKey = key;
     }
 
     /**
@@ -53,7 +53,7 @@ public final class CrypticUtils {
      */
     @Value("${cryptic.switch:0}")
     public void setCrypticSwitch(String val) {
-        CrypticUtils.cryptic_switch = val;
+        this.cryptic_switch = val;
     }
 
     /**
@@ -61,17 +61,30 @@ public final class CrypticUtils {
      * 默认为不加密
      * @param val
      */
-    @Value("${cryptic.defalutAlgorithm:0}")
-    public void setDefalutAlgorithm(String val) {
-        CrypticUtils.defalutAlgorithm = val;
+    @Value("${cryptic.algorithm:0}")
+    public void setAlgorithm(String val) {
+        this.algorithm = val;
+        this.crypticInterface= getCrypticInterface();
     }
 
 
-    private CrypticInterface getCrypticInterface() {
+    public  String getPrivateKey() {
+        return privateKey;
+    }
+
+    public  String getAlgorithm() {
+        return this.algorithm;
+    }
+
+    public  String getCrypticSwitch() {
+        return this.cryptic_switch;
+    }
+
+    public  CrypticInterface getCrypticInterface() {
         if (this.crypticInterface != null) {
             return this.crypticInterface;
         }
-        return CrypticFactory.create(CrypticUtils.privateKey,CrypticUtils.defalutAlgorithm);
+        return CrypticFactory.create(this.privateKey,this.algorithm);
     }
 
 

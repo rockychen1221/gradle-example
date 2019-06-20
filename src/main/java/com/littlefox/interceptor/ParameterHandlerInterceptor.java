@@ -15,9 +15,9 @@ import java.util.Properties;
 
 @Slf4j
 //@Component
-@Intercepts({
+/*@Intercepts({
         @Signature(type = ParameterHandler.class, method = "setParameters", args = PreparedStatement.class),
-})
+})*/
 public class ParameterHandlerInterceptor implements Interceptor {
     @Override
     public Object intercept(Invocation invocation) throws Throwable {

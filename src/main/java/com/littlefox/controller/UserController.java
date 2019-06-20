@@ -5,6 +5,7 @@
  */
 package com.littlefox.controller;
 
+import com.github.pagehelper.PageInfo;
 import com.littlefox.model.User;
 import com.littlefox.service.UserService;
 import lombok.extern.slf4j.Slf4j;
@@ -33,9 +34,16 @@ public class UserController {
         return "";
     }
 
-    @RequestMapping(value = "/queryList",method = RequestMethod.POST)
-    public String queryList(@ModelAttribute("user")User user){
-        userService.queryList(null);
+    @RequestMapping(value = "/queryPageList",method = RequestMethod.GET)
+    public String queryList(){
+        long startTime = System.currentTimeMillis();    //获取开始时间
+        //List<User> users=userService.queryList(new HashMap<>());
+        //users.forEach(user -> System.out.println(user.toString()));
+        PageInfo<User> users2 = userService.selectPageUserList(User.builder().userName("userName5").build(), 0, 10);
+        long endTime = System.currentTimeMillis();    //获取结束时间
+        System.out.println("程序运行时间：" + (endTime - startTime) + "ms");    //输出程序运行时间
+        users2.getList().forEach(user2 -> System.out.println(user2.toString()));
+
         return "";
     }
 }

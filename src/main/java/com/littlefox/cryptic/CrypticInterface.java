@@ -1,6 +1,9 @@
 package com.littlefox.cryptic;
 
 public interface CrypticInterface {
-    public <T> T encryptSelf();
-    public <T> T decryptSelf();
+    public <T> void selectField(T t,String type);
+    public <T> void updateField(T t);
+
+    public String encryptSelf(String str);
+    public String decryptSelf(String str);
 }

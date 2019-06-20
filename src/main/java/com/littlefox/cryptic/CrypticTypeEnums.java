@@ -9,7 +9,7 @@ import org.apache.commons.lang.StringUtils;
 
 public enum CrypticTypeEnums {
 
-    AES("AES", "版本session清除"), SM2("SM2", "新增"), SM3("SM3", "修改"), SM4("SM4", "物理删除");
+    AES("AES", "com.littlefox.cryptic.AES"), SM2("SM2", "新增"), SM3("SM3", "com.littlefox.cryptic.SM3"), SM4CBC("SM4CBC", "物理删除"), SM4ECB("SM4ECB", "物理删除");
 
     CrypticTypeEnums(String key, String value) {
         this.key = key;
