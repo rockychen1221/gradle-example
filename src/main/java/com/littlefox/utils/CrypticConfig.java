@@ -8,33 +8,20 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 /**
- * 配置文件工具类
- *
- * 说明：
- *   1. 默认加载以下文件：encrypt.properties、properties/config-common.properties、properties/config.properties、
- *   config.properties、application.properties，当文件存在且包含 encrypt.private.key 属性时认为是配置文件，会以该
- *   配置文件中的值为准，如果不存在以上文件则使用默认值，用户也可以通过 ConfigUtil.bundleNames() 方法来指定配置文件
- *   的名称，这种情况以指定的为准，若文件不存在则使用默认值
- *   2. 自定义私钥：在以上文件中新增属性 encrypt.private.key=私钥
- *      自定义算法：在以上文件中新增属性 encrypt.class.name=类的全路径
- *
- * @author trang
+ * 默认算法类
  */
 @Component
-public class CrypticUtils {
-
-    private static final Logger log = LoggerFactory.getLogger(CrypticUtils.class);
+public class CrypticConfig {
 
     //私钥
-    private  String privateKey;
+    private String privateKey;
     //默认算法（适合保存到数据库，不会变化的情况）
-    private  String algorithm;
+    private String algorithm;
     // 加解密开关，从配置获取
-    private  String cryptic_switch;
+    private String cryptic_switch;
 
     // 默认算法实现类
-    private  CrypticInterface crypticInterface;
-
+    private CrypticInterface crypticInterface;
 
     /**
      * 从配置中获取秘钥
@@ -57,8 +44,7 @@ public class CrypticUtils {
     }
 
     /**
-     * 获取算法
-     * 默认为不加密
+     * 获取默认算法以及算法执行器
      * @param val
      */
     @Value("${cryptic.algorithm:0}")
@@ -66,7 +52,6 @@ public class CrypticUtils {
         this.algorithm = val;
         this.crypticInterface= getCrypticInterface();
     }
-
 
     public  String getPrivateKey() {
         return privateKey;
@@ -84,9 +69,7 @@ public class CrypticUtils {
         if (this.crypticInterface != null) {
             return this.crypticInterface;
         }
-        return CrypticFactory.create(this.privateKey,this.algorithm);
+        return this.cryptic_switch.equals("0")?null:CrypticFactory.create(this.privateKey,this.algorithm);
     }
-
-
 
 }

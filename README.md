@@ -12,6 +12,9 @@ ONLY_ENCRYPT 仅加密,数据库存储为明文，查询出来加密，通过该
 引入抽象类，添加 AES、SM3、SM4 算法实现类，实现动态算法切换
 
 
+## 2019.06.21
+实现动态算法切换1.0,配置文件切换--》转化为数据库切换
+
 # 遇到的问题
 1.gradle lombok无法使用 （gradle版本问题 4.7以上不能使用 compile("org.projectlombok:lombok:1.18.2")或者compileOnly("org.projectlombok:lombok:1.18.2")）
 2 .注册多个@Component 时，感觉是按照代码结构从上往下扫描的

@@ -13,4 +13,8 @@ public interface UserMapper {
 
     List<User> queryUserList(User user);
 
+    int update(User user);
+
+    int delete(User user);
+
 }

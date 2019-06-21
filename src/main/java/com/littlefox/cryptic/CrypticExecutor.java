@@ -1,5 +1,11 @@
 package com.littlefox.cryptic;
 
+import com.littlefox.annotation.CrypticField;
+import com.littlefox.constant.CrypticConstant;
+import org.apache.commons.lang.StringUtils;
+
+import java.lang.reflect.Field;
+
 /**
  * 数据执行器类，负责选择正确的报表查询器并获取数据，最终转化为成报表的数据集
  *
@@ -43,12 +49,12 @@ public class CrypticExecutor {
      * @param t
      * @param <T>
      */
-    public <T> void updateField(T t) {
+    public <T> void updateField(T t,String type) {
         final CrypticInterface cryptic = this.getCrypticInterface();
         if (cryptic == null) {
             throw new RuntimeException("未指定算法对象!");
         }
-        cryptic.updateField(t);
+        cryptic.updateField(t,type);
     }
 
     private CrypticInterface getCrypticInterface() {

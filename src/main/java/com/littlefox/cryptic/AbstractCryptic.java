@@ -1,6 +1,7 @@
 package com.littlefox.cryptic;
 
 import com.littlefox.annotation.CrypticField;
+import com.littlefox.constant.CrypticConstant;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,10 +41,10 @@ public abstract class AbstractCryptic {
                         }
                         switch (anno.type()){
                             case ONLY_ENCRYPT:
-                                field.set(t,StringUtils.equalsIgnoreCase(type,"result")? encryptSelf(fieldValue):decryptSelf(fieldValue));
+                                field.set(t,StringUtils.equalsIgnoreCase(type,CrypticConstant.AFTER_SELECT)?encryptSelf(fieldValue):decryptSelf(fieldValue));
                                 break;
                             default:
-                                field.set(t,StringUtils.equalsIgnoreCase(type,"result")?decryptSelf(fieldValue):encryptSelf(fieldValue));
+                                field.set(t,StringUtils.equalsIgnoreCase(type,CrypticConstant.AFTER_SELECT)?decryptSelf(fieldValue):encryptSelf(fieldValue));
                                 break;
                         }
                     }
@@ -52,7 +53,6 @@ public abstract class AbstractCryptic {
         } catch (IllegalAccessException e) {
             throw new RuntimeException(e);
         }
-        // return t;
     }
 
     /**
@@ -60,7 +60,7 @@ public abstract class AbstractCryptic {
      * @param t
      * @param <T>
      */
-    public <T> void updateField(T t) {
+    public <T> void updateField(T t,String type) {
         Field[] declaredFields = t.getClass().getDeclaredFields();
         try {
             if (declaredFields != null && declaredFields.length > 0) {
@@ -73,7 +73,9 @@ public abstract class AbstractCryptic {
                             continue;
                         }
                         switch (anno.type()){
-                            case ONLY_ENCRYPT:break;
+                            case ONLY_ENCRYPT:
+                                field.set(t,StringUtils.equalsIgnoreCase(type,CrypticConstant.INSERT)?fieldValue:decryptSelf(fieldValue));
+                                break;
                             default:field.set(t, encryptSelf(fieldValue));break;
                         }
                     }
@@ -82,7 +84,6 @@ public abstract class AbstractCryptic {
         } catch (IllegalAccessException e) {
             throw new RuntimeException(e);
         }
-        // return t;
     }
 
     public String encryptSelf(String str){

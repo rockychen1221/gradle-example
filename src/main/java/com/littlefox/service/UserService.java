@@ -27,5 +27,10 @@ public interface UserService {
     PageInfo<User> selectPageUserList (User costBudget, int pageNum, int pageSize);
 
 
+    void update(User user);
+
+
+    void delete(User user);
+
 
 }

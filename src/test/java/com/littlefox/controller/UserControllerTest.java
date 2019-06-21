@@ -150,7 +150,7 @@ public class UserControllerTest {
         for (int i = 0; i < 50; i++) {
             idList.add(i);
         }
-        int threadNum = 10;
+        int threadNum = 1;
         ExecutorService executorService = Executors.newFixedThreadPool(threadNum);
         CountDownLatch countDownLatch = new CountDownLatch(threadNum);
         int perSize = idList.size() / threadNum;
@@ -226,11 +226,31 @@ public class UserControllerTest {
     @Test
     public void queryPageList() {
         long startTime = System.currentTimeMillis();    //获取开始时间
-        //List<User> users=userService.queryList(new HashMap<>());
+        //List<User> users=userService.queryList(new HashMap<>());   User(id=3CB77C649AD0A2119D1E07D58CA01642, userName=userName5, phone=6F6C3EF413CCF090211FE7F7CF94E4B3)
         //users.forEach(user -> System.out.println(user.toString()));
-        PageInfo<User> users2 = userService.selectPageUserList(User.builder().userName("userName5").build(), 0, 10);
+        PageInfo<User> users2 = userService.selectPageUserList(User.builder().build(), 0, 10);
         long endTime = System.currentTimeMillis();    //获取结束时间
         System.out.println("程序运行时间：" + (endTime - startTime) + "ms");    //输出程序运行时间
         users2.getList().forEach(user2 -> System.out.println(user2.toString()));
     }
+
+
+    @Test
+    public void update() {
+        long startTime = System.currentTimeMillis();    //获取开始时间
+        userService.update(User.builder().id("3CB77C649AD0A2119D1E07D58CA01642").userName("userName,rockychen").build());
+        long endTime = System.currentTimeMillis();    //获取结束时间
+        System.out.println("程序运行时间：" + (endTime - startTime) + "ms");    //输出程序运行时间
+    }
+
+
+    @Test
+    public void delete() {
+        long startTime = System.currentTimeMillis();    //获取开始时间
+        userService.delete(User.builder().userName("userName5").build());
+        long endTime = System.currentTimeMillis();    //获取结束时间
+        System.out.println("程序运行时间：" + (endTime - startTime) + "ms");    //输出程序运行时间
+    }
+
+
 }

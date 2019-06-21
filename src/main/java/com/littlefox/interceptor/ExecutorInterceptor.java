@@ -1,9 +1,9 @@
 package com.littlefox.interceptor;
 
 import com.littlefox.annotation.CrypticField;
+import com.littlefox.constant.CrypticConstant;
 import com.littlefox.cryptic.CrypticExecutor;
-import com.littlefox.cryptic.CrypticInterface;
-import com.littlefox.utils.CrypticUtils;
+import com.littlefox.utils.CrypticConfig;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.apache.ibatis.cache.CacheKey;
@@ -15,7 +15,6 @@ import org.apache.ibatis.plugin.*;
 import org.apache.ibatis.session.ResultHandler;
 import org.apache.ibatis.session.RowBounds;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Field;
@@ -43,7 +42,8 @@ import java.util.*;
 public class ExecutorInterceptor implements Interceptor {
 
     @Autowired
-    private CrypticUtils crypticUtils;
+    private CrypticConfig crypticConfig;
+
 
     /**
      *
@@ -51,8 +51,6 @@ public class ExecutorInterceptor implements Interceptor {
      * @param typeName
      */
     private void  fieldIsCrypt(Object obj,String typeName){
-
-
         Field[] fields = obj.getClass().getDeclaredFields();
         if (obj instanceof ArrayList<?>) {
             fields =((ArrayList) obj).get(0).getClass().getDeclaredFields();
@@ -73,12 +71,16 @@ public class ExecutorInterceptor implements Interceptor {
                     break;
                 }
             } /// for end ~
-            if (isD) {  // 将含有DecryptField注解的字段解密
-                if (StringUtils.equalsIgnoreCase(typeName, "param")){
-                    new CrypticExecutor(crypticUtils.getCrypticInterface()).selectField(obj,typeName);
-                } else if (StringUtils.equalsIgnoreCase(typeName, "result")){
+            if (isD) {
+                if (StringUtils.equalsIgnoreCase(typeName, CrypticConstant.BEFORE_SELECT)){
+
+
+                    new CrypticExecutor(crypticConfig.getCrypticInterface()).selectField(obj,typeName);
+
+
+                } else if (StringUtils.equalsIgnoreCase(typeName, CrypticConstant.AFTER_SELECT)){
                     List<?> list = (ArrayList<?>) obj;
-                    list.forEach(l -> new CrypticExecutor(crypticUtils.getCrypticInterface()).selectField(l,typeName));
+                    list.forEach(l -> new CrypticExecutor(crypticConfig.getCrypticInterface()).selectField(l,typeName));
                 }
             }
         } /// if end ~
@@ -86,7 +88,6 @@ public class ExecutorInterceptor implements Interceptor {
 
     @Override
     public Object intercept(Invocation invocation) throws Throwable {
-
 
         // 根据签名指定的args顺序获取具体的实现类
         // 1. 获取MappedStatement实例, 并获取当前SQL命令类型
@@ -108,13 +109,12 @@ public class ExecutorInterceptor implements Interceptor {
          * 拦截批量插入操作不仅繁琐，而且为了通用逐一通过反射加密不妥
          * 如果有批量操作，最好在传递参数之前，向list中添加之前就加密
          */
-        if (!"0".equals(crypticUtils.getCrypticSwitch())) {
-            if (StringUtils.equalsIgnoreCase("update", methodName)
-                    || StringUtils.equalsIgnoreCase("insert", methodName)) {
-
-                new CrypticExecutor(crypticUtils.getCrypticInterface()).updateField(parameter);
-
-                //CryptPojoUtils.updateField(parameter);
+        if (!"0".equals(crypticConfig.getCrypticSwitch())) {
+            if (StringUtils.equalsIgnoreCase("update", methodName)) {
+                /**
+                 * 所有保存、修改
+                 */
+                new CrypticExecutor(crypticConfig.getCrypticInterface()).updateField(parameter,commandType.name());
                 return invocation.proceed();
             }
         }
@@ -163,7 +163,7 @@ public class ExecutorInterceptor implements Interceptor {
             Map map= new org.apache.commons.beanutils.BeanMap(obj);
             ((HashMap<?, ?>) parameter).putAll(map);*/
         }else {
-            fieldIsCrypt(parameter,"param");
+            fieldIsCrypt(parameter, CrypticConstant.BEFORE_SELECT);
         }
 
         //TODO 自己要进行的各种处理
@@ -178,7 +178,7 @@ public class ExecutorInterceptor implements Interceptor {
             if (null == obj)  // 这里虽然list不是空，但是返回字符串等有可能为空
                 return returnValue;
 
-            fieldIsCrypt(list,"result");
+            fieldIsCrypt(list,CrypticConstant.AFTER_SELECT);
         } /// if end ~
 
         //TODO 自己要进行的各种处理

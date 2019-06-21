@@ -45,4 +45,12 @@
     </where>
   </select>
 
+  <update id="update">
+    update TEST_USER set user_name=#{userName} , phone =#{phone} where id = #{id}
+  </update>
+
+  <delete id="delete">
+    delete TEST_USER where id = #{id}
+  </delete>
+
 </mapper>

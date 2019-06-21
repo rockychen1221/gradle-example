@@ -42,4 +42,14 @@ public class UserServiceImpl implements UserService {
         //返回分页后集合
         return new PageInfo<User>(list);
     }
+
+    @Override
+    public void update(User user) {
+        userMapper.update(user);
+    }
+
+    @Override
+    public void delete(User user) {
+        userMapper.delete(user);
+    }
 }
