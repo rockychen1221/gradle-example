@@ -6,10 +6,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * @decription DecryptField
- * <p>字段加/解密注解</p>
+ * 字段加/解密注解
  * @author rockychen
- * @date 2019/06/19 13:05
  */
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)

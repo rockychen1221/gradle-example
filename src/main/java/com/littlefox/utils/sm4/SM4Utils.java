@@ -12,17 +12,16 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class SM4Utils {
-//	private String secretKey = "";
-//    private String iv = "";
-//    private boolean hexString = false;
 
     public String secretKey = "";
-    public String iv = "";
-    public boolean hexString = false;
+    public String iv = "31313131313131313131313131313131";
+    public boolean hexString = true;
 
-    public SM4Utils() {
+    public SM4Utils(String secretKey) {
+        this.secretKey=secretKey;
     }
 
+    public SM4Utils() {}
 
     public String encryptData_ECB(String plainText) {
         try {

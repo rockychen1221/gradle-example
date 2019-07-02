@@ -9,12 +9,12 @@ import java.lang.reflect.Constructor;
  */
 public class CrypticFactory {
 
-    public static CrypticInterface create(final String privateKey, final String algorithm) {
+    public static CrypticInterface create(final String secretKey, final String algorithm) {
         if (algorithm != null) {
             try {
-                final Class<?> clazz = Class.forName(CrypticTypeEnums.getEnumByKey(algorithm).getValue());
+                final Class<?> clazz = Class.forName(  new CrypticTypeEnums().getEnumByKey(algorithm).getValue());
                 final Constructor<?> constructor = clazz.getConstructor(String.class, String.class);
-                return (CrypticInterface)constructor.newInstance(privateKey, algorithm);
+                return (CrypticInterface)constructor.newInstance(secretKey, algorithm);
             } catch (final Exception ex) {
                 throw new RuntimeException("create cryptic engine error", ex);
             }

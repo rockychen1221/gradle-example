@@ -1,9 +1,10 @@
 package com.littlefox.cryptic;
 
+/**
+ * 加密接口
+ * @author rockychen
+ */
 public interface CrypticInterface {
-    public <T> void selectField(T t,String type);
-    public <T> void updateField(T t,String type);
-
-    public String encryptSelf(String str);
-    public String decryptSelf(String str);
+    String encryptSelf(String str);
+    String decryptSelf(String str);
 }

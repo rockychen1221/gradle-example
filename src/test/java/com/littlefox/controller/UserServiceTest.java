@@ -1,7 +1,6 @@
 package com.littlefox.controller;
 
 import com.github.pagehelper.PageInfo;
-import com.littlefox.Application;
 import com.littlefox.model.User;
 import com.littlefox.service.UserService;
 import lombok.extern.slf4j.Slf4j;
@@ -16,12 +15,11 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicInteger;
 
 @Slf4j
 @RunWith(SpringRunner.class)
 @SpringBootTest
-public class UserControllerTest {
+public class UserServiceTest {
 
     @Resource
     private UserService userService;
@@ -147,10 +145,10 @@ public class UserControllerTest {
         long startTime = System.currentTimeMillis();    //获取开始时间
 
         List<Integer> idList = new ArrayList<>();
-        for (int i = 0; i < 50; i++) {
+        for (int i = 0; i < 5000; i++) {
             idList.add(i);
         }
-        int threadNum = 1;
+        int threadNum = 100;
         ExecutorService executorService = Executors.newFixedThreadPool(threadNum);
         CountDownLatch countDownLatch = new CountDownLatch(threadNum);
         int perSize = idList.size() / threadNum;
@@ -164,7 +162,9 @@ public class UserControllerTest {
         countDownLatch.await();
         executorService.shutdown();
 
-        System.out.println("numb=="+numb);
+        long endTime = System.currentTimeMillis();    //获取结束时间
+
+        System.out.println("程序运行时间：" + (endTime - startTime) + "ms");    //输出程序运行时间
 
 
         /*List<String> list = new ArrayList<String>();
@@ -216,18 +216,17 @@ public class UserControllerTest {
     @Test
     public void queryUserList() {
         long startTime = System.currentTimeMillis();    //获取开始时间
-        List<User> users2 = userService.queryUserList(User.builder().id("3CB77C649AD0A2119D1E07D58CA01642").build());
-        System.out.println(users2.size());
+        //List<User> users2 = userService.queryUserList(User.builder().id("F98B1ACAAE38C2C512E14034F82C6993").build());
+        List<User> users = userService.queryUserList(User.builder().build());
+        System.out.println("查询总数量:"+users.size());
         long endTime = System.currentTimeMillis();    //获取结束时间
         System.out.println("程序运行时间：" + (endTime - startTime) + "ms");    //输出程序运行时间
-        users2.forEach(user2 -> System.out.println(user2.toString()));
+        //users.forEach(user -> System.out.println(user.toString()));
     }
 
     @Test
     public void queryPageList() {
         long startTime = System.currentTimeMillis();    //获取开始时间
-        //List<User> users=userService.queryList(new HashMap<>());   User(id=3CB77C649AD0A2119D1E07D58CA01642, userName=userName5, phone=6F6C3EF413CCF090211FE7F7CF94E4B3)
-        //users.forEach(user -> System.out.println(user.toString()));
         PageInfo<User> users2 = userService.selectPageUserList(User.builder().build(), 0, 10);
         long endTime = System.currentTimeMillis();    //获取结束时间
         System.out.println("程序运行时间：" + (endTime - startTime) + "ms");    //输出程序运行时间

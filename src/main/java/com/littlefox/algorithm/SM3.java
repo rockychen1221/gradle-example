@@ -1,5 +1,7 @@
-package com.littlefox.cryptic;
+package com.littlefox.algorithm;
 
+import com.littlefox.cryptic.AbstractCryptic;
+import com.littlefox.cryptic.CrypticInterface;
 import org.bouncycastle.crypto.digests.SM3Digest;
 import org.bouncycastle.util.encoders.Hex;
 
@@ -9,8 +11,8 @@ import org.bouncycastle.util.encoders.Hex;
  */
 public class SM3 extends AbstractCryptic implements CrypticInterface {
 
-    public SM3(String privateKey, String algorithm) {
-        super(privateKey, algorithm);
+    public SM3(String secretKey, String algorithm) {
+        super(secretKey, algorithm);
     }
 
     @Override

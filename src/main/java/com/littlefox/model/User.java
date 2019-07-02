@@ -3,6 +3,13 @@ package com.littlefox.model;
 import com.littlefox.annotation.CrypticField;
 import lombok.*;
 
+import java.util.List;
+
+/**
+ * 用户
+ * @author rockychen
+ * @date
+ */
 @Data
 @Builder
 @ToString
@@ -13,6 +20,9 @@ public class User {
     private String id;
     @CrypticField
     private String userName;
-    @CrypticField(type = CrypticField.Type.ONLY_ENCRYPT)
+    @CrypticField
     private String phone;
+
+    @CrypticField
+    private List<String> list;
 }
