@@ -188,11 +188,11 @@ public class CrypticExecutor {
     }
 
     /**
-     * 获取所有字段
+     * 获取类所有字段
      * @param c
      * @return
      */
-    public static Field[] getAllFields(Class<?> c){
+    private static Field[] getAllFields(Class<?> c){
         Field[] fields= null;
         // 获取父类，判断是否为实体类
         if (c.getSuperclass() != Object.class) {

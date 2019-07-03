@@ -2,7 +2,7 @@
 
 我想了想正好最近有需要把加密业务替换成国密算法，便有了这个example
 
-# 加密注解介绍
+## 加密注解介绍
 
 1. 定义![image-20190628101914218](/Users/datadriver/Library/Application Support/typora-user-images/image-20190628101914218.png)
 2. 仅加密 `@CrypticField(type = CrypticField.Type.ONLY_ENCRYPT)`  （一般这个实际情况用的多一些）
@@ -49,46 +49,38 @@ ONLY_ENCRYPT 仅加密,数据库存储为明文，查询出来加密，通过该
 添加注解可在方法上使用，自动转换处理，添加手动工具类
 
 ## 2019.06.26
-解决类嵌套依赖，注解不能自动处理 如`javaBean`中存在嵌套`List`
+解决类嵌套依赖，注解不能自动处理 (如`javaBean`中存在嵌套`List`)
 
 ## 2019.07.03
 解决类继承依赖，结合注解自动处理当中的依赖关系
 
 
-#### 待解决
+### 待解决
+- [x] pagehelper 分页bug
+- [x] 嵌套对象逻辑处理
+- [x] 对象继承处理
+- [ ]
 
-pagehelper 分页bug
 
-嵌套对象逻辑处理
+### 遇到的问题
 
-对象继承处理
+1. gradle lombok无法使用 （gradle版本问题 4.7以上不能使用 compile("org.projectlombok:lombok:1.18.2")或者compileOnly("org.projectlombok:lombok:1.18.2")）
+2. 注册多个@Component 时，感觉是按照代码结构从上往下扫描的
 
-# 遇到的问题
-1.gradle lombok无法使用 （gradle版本问题 4.7以上不能使用 compile("org.projectlombok:lombok:1.18.2")或者compileOnly("org.projectlombok:lombok:1.18.2")）
-2 .注册多个@Component 时，感觉是按照代码结构从上往下扫描的
 
-#### 注：
+### 注：
 
 1. 算法只能对`String`类型进行加解密处理
-3. `JavaBean`处理只针对在`model`包下，并且参数个数只有一个，请遵守约定
-4. 对于查询返回结果不是`JavaBean` or `List<T>` 目前还没处理(可实现)，举例返回值是`String`等
-5. `CrypticField`对于用户查询不友好（模糊查询，范围查询），因为数据库存储的是密文
+2. `JavaBean`处理只针对在`model`包下，并且参数个数只有一个，请遵守约定
+3. 对于查询返回结果不是`JavaBean` or `List<T>` 目前还没处理(可实现)，举例返回值是`String`等
+4. `CrypticField`对于用户查询不友好（模糊查询，范围查询），因为数据库存储的是密文
 
-
-# About example:
+## About example:
 利用mybatis Interceptor 拦截修改和查询操作，对于参数/结果集进行加解密处理
 通过自定义Java类注解`CrypticField`，来实现加解密逻辑
 
 关于动态算法切换，本example没有提供，只能来自`application.properties` 进行切换
 动态算法实现逻辑：
-注意事项：如果使用`pagehelper`插件进行查询分页，则不能再`CrypticExecutor`执行器类中进行查询操作，
+注意事项：如果使用`pagehelper`插件进行查询分页，则不能再`CrypticExecutor`执行器类中进行查询操作
 
-
-使用中如有问题，欢迎issue
-
-
-
-
-
-
-
+使用中如有问题，欢迎提 [issue](https://github.com/rockychen1221/gradle-example/issues "issue")

@@ -6,7 +6,6 @@ import lombok.*;
 /**
  * 用户
  * @author rockychen
- * @date
  */
 @Data
 @ToString
@@ -19,5 +18,4 @@ public class Person {
     private String age;
     @CrypticField
     private String address;
-
 }
