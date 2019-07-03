@@ -1,20 +1,17 @@
 package com.littlefox.algorithm;
 
 import com.littlefox.cryptic.AbstractCryptic;
-import com.littlefox.cryptic.CrypticInterface;
+import com.littlefox.cryptic.Cryptic;
 import com.littlefox.utils.sm4.SM4Utils;
-import org.bouncycastle.crypto.digests.SM3Digest;
-import org.bouncycastle.util.encoders.Hex;
 
 /**
  * 对称加密 SM4CBC
- *
  * @author rockychen
  */
-public class SM4CBC extends AbstractCryptic implements CrypticInterface {
+public class SM4CBC extends AbstractCryptic implements Cryptic {
 
-    public SM4CBC(String secretKey, String algorithm) {
-        super(secretKey, algorithm);
+    public SM4CBC(String secretKey) {
+        super(secretKey);
     }
 
     @Override

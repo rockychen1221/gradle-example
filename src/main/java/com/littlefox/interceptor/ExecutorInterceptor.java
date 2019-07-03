@@ -40,7 +40,7 @@ public class ExecutorInterceptor implements Interceptor {
     private CrypticConfig crypticConfig;
 
     /**
-     * 处理map参数
+     * 处理map or string参数
      * @param obj
      * @param typeName
      * @param key
@@ -51,11 +51,11 @@ public class ExecutorInterceptor implements Interceptor {
             return null;
         }
         String value= "";
-        String type="String";
+        String type=CrypticConstant.STRING;
         if (obj instanceof HashMap<?,?>) {
             Map map=(HashMap<?, ?>)obj;
             value=(String) map.get(key);
-            type="HashMap";
+            type=CrypticConstant.HASHMAP;
         }else if (obj instanceof String){
             value= (String) obj;
         }
@@ -68,12 +68,12 @@ public class ExecutorInterceptor implements Interceptor {
         String [] text=new String[str.length];
 
         for (int i=0;i<str.length;i++){
-            text[i]=new CrypticExecutor(crypticConfig.getCrypticInterface()).selectMapField(str[i],typeName,annotation);
+            text[i]=new CrypticExecutor(crypticConfig.getCryptic()).selectMapField(str[i],typeName,annotation);
         }
         List<String> cities = Arrays.asList(text);
         String strCommaSeparated = String.join(",", cities);
 
-        if(StringUtils.equalsAnyIgnoreCase(type,"HashMap")){
+        if(StringUtils.equalsAnyIgnoreCase(type,CrypticConstant.HASHMAP)){
             ((HashMap<String, String>)obj).put(key,strCommaSeparated);
         }else {
             return strCommaSeparated;
@@ -82,7 +82,7 @@ public class ExecutorInterceptor implements Interceptor {
     }
 
     /**
-     *
+     * 处理javaBean
      * @param obj
      * @param typeName
      */
@@ -108,10 +108,10 @@ public class ExecutorInterceptor implements Interceptor {
             }
             if (isD) {
                 if (StringUtils.equalsIgnoreCase(typeName, CrypticConstant.BEFORE_SELECT)){
-                    new CrypticExecutor(crypticConfig.getCrypticInterface()).selectField(obj,typeName);
+                    new CrypticExecutor(crypticConfig.getCryptic()).selectField(obj,typeName);
                 } else if (StringUtils.equalsIgnoreCase(typeName, CrypticConstant.AFTER_SELECT)){
                     List<?> list = (ArrayList<?>) obj;
-                    list.forEach(l -> new CrypticExecutor(crypticConfig.getCrypticInterface()).selectField(l,typeName));
+                    list.forEach(l -> new CrypticExecutor(crypticConfig.getCryptic()).selectField(l,typeName));
                 }
             }
         }
@@ -152,7 +152,7 @@ public class ExecutorInterceptor implements Interceptor {
                         break;
                     }else if (StringUtils.equalsIgnoreCase(CrypticConstant.UPDATE, methodName)) {
                         // 修改直接返回
-                        new CrypticExecutor(crypticConfig.getCrypticInterface()).updateField(parameter,commandType.name());
+                        new CrypticExecutor(crypticConfig.getCryptic()).updateField(parameter,commandType.name());
                         return invocation.proceed();
                     }
                 }else {

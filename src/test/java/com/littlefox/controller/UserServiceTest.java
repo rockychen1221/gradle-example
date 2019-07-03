@@ -41,7 +41,6 @@ public class UserServiceTest {
         public void run() {
             try {
                 for (int i = 0; i < list.size(); i++) {
-                    System.out.println("============"+list.get(i));
                     //这里还要说一下，，由于在实质项目中，当处理的数据存在等待超时和出错会使线程一直处于等待状态    //这里只是处理简单的，    //分批 批量插入
                 }
 

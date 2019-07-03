@@ -1,7 +1,7 @@
 package com.littlefox.algorithm;
 
 import com.littlefox.cryptic.AbstractCryptic;
-import com.littlefox.cryptic.CrypticInterface;
+import com.littlefox.cryptic.Cryptic;
 import org.bouncycastle.crypto.digests.SM3Digest;
 import org.bouncycastle.util.encoders.Hex;
 
@@ -9,10 +9,10 @@ import org.bouncycastle.util.encoders.Hex;
  * SM3单向加密，无法解密
  * @author rockychen
  */
-public class SM3 extends AbstractCryptic implements CrypticInterface {
+public class SM3 extends AbstractCryptic implements Cryptic {
 
-    public SM3(String secretKey, String algorithm) {
-        super(secretKey, algorithm);
+    public SM3(String secretKey) {
+        super(secretKey);
     }
 
     @Override

@@ -1,7 +1,7 @@
 package com.littlefox.algorithm;
 
 import com.littlefox.cryptic.AbstractCryptic;
-import com.littlefox.cryptic.CrypticInterface;
+import com.littlefox.cryptic.Cryptic;
 import com.littlefox.utils.aes.AESUtils;
 import lombok.extern.slf4j.Slf4j;
 
@@ -10,10 +10,10 @@ import lombok.extern.slf4j.Slf4j;
  * @author rockychen
  */
 @Slf4j
-public class AES extends AbstractCryptic implements CrypticInterface {
+public class AES extends AbstractCryptic implements Cryptic {
 
-    public AES(String secretKey, String algorithm) {
-        super(secretKey, algorithm);
+    public AES(String secretKey) {
+        super(secretKey);
     }
 
     @Override

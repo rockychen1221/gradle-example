@@ -3,6 +3,7 @@ package com.littlefox.cryptic;
 import com.littlefox.annotation.CrypticField;
 import com.littlefox.constant.CrypticConstant;
 import com.littlefox.utils.CrypticUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.ObjectUtils;
 
@@ -16,18 +17,18 @@ import java.util.List;
  */
 public class CrypticExecutor {
 
-    private static CrypticInterface cryptic;
+    private static Cryptic cryptic;
 
     /**
      * 数据执行器
      *
      */
-    public CrypticExecutor(final CrypticInterface crypticInterface) {
-        cryptic = crypticInterface;
+    public CrypticExecutor(final Cryptic cryptic) {
+        CrypticExecutor.cryptic = cryptic;
     }
 
     public static String dynamicEncrypt(String str){
-        final CrypticInterface dynamicCryptic = getDynamicCrypticInterface();
+        final Cryptic dynamicCryptic = getDynamicCrypticInterface();
         if (ObjectUtils.isEmpty(dynamicCryptic)) {
             return str;
         }
@@ -35,7 +36,7 @@ public class CrypticExecutor {
     }
 
     public static String dynamicDecrypt(String str){
-        final CrypticInterface dynamicCryptic = getDynamicCrypticInterface();
+        final Cryptic dynamicCryptic = getDynamicCrypticInterface();
         if (ObjectUtils.isEmpty(dynamicCryptic)) {
             return str;
         }
@@ -50,7 +51,7 @@ public class CrypticExecutor {
      * @return
      */
     public String selectMapField(String fieldValue, String type, CrypticField annotation) {
-        final CrypticInterface defaultCryptic = getCrypticInterface();
+        final Cryptic defaultCryptic = getCrypticInterface();
 
         if (defaultCryptic == null) {
             throw new RuntimeException("未指定算法对象!");
@@ -58,7 +59,8 @@ public class CrypticExecutor {
 
         switch (annotation.type()){
             case ONLY_ENCRYPT://可切换算法注解
-                fieldValue=StringUtils.equalsIgnoreCase(type, CrypticConstant.AFTER_SELECT)? CrypticUtils.encryptSelf(fieldValue):CrypticUtils.decryptSelf(fieldValue);
+                //fieldValue=StringUtils.equalsIgnoreCase(type, CrypticConstant.AFTER_SELECT)? CrypticUtils.encryptSelf(fieldValue):CrypticUtils.decryptSelf(fieldValue);
+                fieldValue=StringUtils.equalsIgnoreCase(type, CrypticConstant.AFTER_SELECT)? defaultCryptic.encryptSelf(fieldValue):defaultCryptic.decryptSelf(fieldValue);
                 break;
             default:
                 fieldValue=StringUtils.equalsIgnoreCase(type,CrypticConstant.AFTER_SELECT)?defaultCryptic.decryptSelf(fieldValue):defaultCryptic.encryptSelf(fieldValue);
@@ -75,7 +77,7 @@ public class CrypticExecutor {
      * @return
      */
     public String updateMapField(String fieldValue, String type, CrypticField annotation) {
-        final CrypticInterface defaultCryptic = getCrypticInterface();
+        final Cryptic defaultCryptic = getCrypticInterface();
         if (defaultCryptic == null) {
             throw new RuntimeException("未指定算法对象!");
         }
@@ -97,16 +99,16 @@ public class CrypticExecutor {
      * @param <T>
      */
     public <T> void selectField(T t,String type) {
-        final CrypticInterface defaultCryptic = getCrypticInterface();
+        final Cryptic defaultCryptic = getCrypticInterface();
 
         if (defaultCryptic == null) {
             throw new RuntimeException("未指定算法对象!");
         }
 
-        Field[] declaredFields = t.getClass().getDeclaredFields();
+        Field[] allFields=getAllFields(t.getClass());
         try {
-            if (declaredFields != null && declaredFields.length > 0) {
-                for (Field field : declaredFields) {
+            if (allFields != null && allFields.length > 0) {
+                for (Field field : allFields) {
                     field.setAccessible(true);
                     if (field.isAnnotationPresent(CrypticField.class) && field.getType().toString().endsWith("String")) {
                         CrypticField anno =field.getAnnotation(CrypticField.class);
@@ -116,7 +118,8 @@ public class CrypticExecutor {
                         }
                         switch (anno.type()){
                             case ONLY_ENCRYPT://可切换算法注解
-                                field.set(t,StringUtils.equalsIgnoreCase(type, CrypticConstant.AFTER_SELECT)?CrypticUtils.encryptSelf(fieldValue):CrypticUtils.decryptSelf(fieldValue));
+                                //field.set(t,StringUtils.equalsIgnoreCase(type, CrypticConstant.AFTER_SELECT)?CrypticUtils.encryptSelf(fieldValue):CrypticUtils.decryptSelf(fieldValue));
+                                field.set(t,StringUtils.equalsIgnoreCase(type, CrypticConstant.AFTER_SELECT)?defaultCryptic.encryptSelf(fieldValue):defaultCryptic.decryptSelf(fieldValue));
                                 break;
                             default:
                                 field.set(t,StringUtils.equalsIgnoreCase(type,CrypticConstant.AFTER_SELECT)?defaultCryptic.decryptSelf(fieldValue):defaultCryptic.encryptSelf(fieldValue));
@@ -142,15 +145,16 @@ public class CrypticExecutor {
      */
     public <T> void updateField(T t,String type) {
 
-        final CrypticInterface defaultCryptic = getCrypticInterface();
+        final Cryptic defaultCryptic = getCrypticInterface();
 
         if (defaultCryptic == null || defaultCryptic ==null) {
             throw new RuntimeException("未指定算法对象!");
         }
-        Field[] declaredFields = t.getClass().getDeclaredFields();
+        //Field[] declaredFields = t.getClass().getDeclaredFields();
+        Field[] allFields=getAllFields(t.getClass());
         try {
-            if (declaredFields != null && declaredFields.length > 0) {
-                for (Field field : declaredFields) {
+            if (allFields != null && allFields.length > 0) {
+                for (Field field : allFields) {
                     if (field.isAnnotationPresent(CrypticField.class) && field.getType().toString().endsWith("String")) {
                         CrypticField anno =field.getAnnotation(CrypticField.class);
                         field.setAccessible(true);
@@ -160,7 +164,10 @@ public class CrypticExecutor {
                         }
                         switch (anno.type()){
                             case ONLY_ENCRYPT:
-                                field.set(t,CrypticUtils.decryptSelf(fieldValue));
+                                if (!StringUtils.equalsAnyIgnoreCase(type,CrypticConstant.INSERT)){
+                                    field.set(t,defaultCryptic.decryptSelf(fieldValue));
+                                }
+                                //field.set(t,CrypticUtils.decryptSelf(fieldValue));
                                 break;
                             default:field.set(t, defaultCryptic.encryptSelf(fieldValue));break;
                         }
@@ -172,13 +179,28 @@ public class CrypticExecutor {
         }
     }
 
-    private static CrypticInterface getCrypticInterface() {
+    private static Cryptic getCrypticInterface() {
         return cryptic;
     }
 
-    private static CrypticInterface getDynamicCrypticInterface() {
-
+    private static Cryptic getDynamicCrypticInterface() {
         return null;
+    }
+
+    /**
+     * 获取所有字段
+     * @param c
+     * @return
+     */
+    public static Field[] getAllFields(Class<?> c){
+        Field[] fields= null;
+        // 获取父类，判断是否为实体类
+        if (c.getSuperclass() != Object.class) {
+            fields =getAllFields(c.getSuperclass());
+        }
+        // 获取类中的所有定义字段
+        Field[] declaredfields = c.getDeclaredFields();
+        return ArrayUtils.addAll(fields,declaredfields);
     }
 
 }

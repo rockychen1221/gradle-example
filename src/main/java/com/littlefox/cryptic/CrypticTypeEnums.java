@@ -6,7 +6,7 @@ import org.apache.commons.lang3.StringUtils;
  * 算法枚举
  * @author rockychen
  */
-public enum CrypticTypeEnums implements CrypticType{
+public enum CrypticTypeEnums{
 
     AES("AES", "com.littlefox.algorithm.AES"),
     SM3("SM3", "com.littlefox.algorithm.SM3"),
@@ -21,11 +21,10 @@ public enum CrypticTypeEnums implements CrypticType{
     private String key;
     private String value;
 
-    @Override
-    public CrypticTypeEnums getEnumByKey(String key){
+    public static String getEnumByKey(String key){
         for (int i = 0; i < CrypticTypeEnums.values().length; i++) {
             if(StringUtils.equals(key,CrypticTypeEnums.values()[i].getKey())){
-                return CrypticTypeEnums.values()[i];
+                return CrypticTypeEnums.values()[i].getValue();
             }
         }
         return null;

@@ -12,17 +12,16 @@ import java.util.List;
  */
 @Data
 @Builder
-@ToString
+@ToString(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
-public class User {
+@EqualsAndHashCode(callSuper = true)
+public class User extends Person{
     @CrypticField(type = CrypticField.Type.ONLY_ENCRYPT)
     private String id;
-    @CrypticField
+
     private String userName;
     @CrypticField
     private String phone;
 
-    @CrypticField
-    private List<String> list;
 }

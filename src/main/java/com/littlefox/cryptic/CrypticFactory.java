@@ -1,5 +1,6 @@
 package com.littlefox.cryptic;
 
+import lombok.extern.slf4j.Slf4j;
 import java.lang.reflect.Constructor;
 
 /**
@@ -7,16 +8,18 @@ import java.lang.reflect.Constructor;
  *
  * @author rockychen
  */
+@Slf4j
 public class CrypticFactory {
 
-    public static CrypticInterface create(final String secretKey, final String algorithm) {
+    public static Cryptic create(final String secretKey, final String algorithm) {
         if (algorithm != null) {
             try {
-                final Class<?> clazz = Class.forName(  new CrypticTypeEnums().getEnumByKey(algorithm).getValue());
-                final Constructor<?> constructor = clazz.getConstructor(String.class, String.class);
-                return (CrypticInterface)constructor.newInstance(secretKey, algorithm);
+                final Class<?> clazz = Class.forName(CrypticTypeEnums.getEnumByKey(algorithm));
+                final Constructor<?> constructor = clazz.getConstructor(String.class);
+                return (Cryptic)constructor.newInstance(secretKey);
             } catch (final Exception ex) {
-                throw new RuntimeException("create cryptic engine error", ex);
+                log.error("create CrypticInterface engine error",ex);
+                throw new RuntimeException("create CrypticInterface engine error", ex);
             }
         }
         return null;

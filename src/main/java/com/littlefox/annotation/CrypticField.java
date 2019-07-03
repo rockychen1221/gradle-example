@@ -9,7 +9,7 @@ import java.lang.annotation.Target;
  * 字段加/解密注解
  * @author rockychen
  */
-@Target(ElementType.FIELD)
+@Target({ElementType.FIELD,ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface CrypticField {
     /**

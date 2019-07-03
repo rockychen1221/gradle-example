@@ -25,7 +25,6 @@ public class Application {
 
 		private UserService userService;
 
-
 		private List<Integer> idList;
 
 		private CountDownLatch countDownLatch;
@@ -56,6 +55,10 @@ public class Application {
 					User user = User.builder()
 							.userName("userName" + i).phone("phone" + i)
 							.build();
+
+					user.setLid("lid"+i);
+					user.setAddress("address"+i);
+					user.setAge(""+i);
 					userService.insert(user);
 				}
 			} catch (Exception e) {
@@ -76,10 +79,10 @@ public class Application {
 		long startTime = System.currentTimeMillis();    //获取开始时间
 
 		List<Integer> idList = new ArrayList<>();
-		for (int i = 0; i < 5000; i++) {
+		for (int i = 0; i < 1000; i++) {
 			idList.add(i);
 		}
-		int threadNum = 100;
+		int threadNum = 1;
 		ExecutorService executorService = Executors.newFixedThreadPool(threadNum);
 		CountDownLatch countDownLatch = new CountDownLatch(threadNum);
 		int perSize = idList.size() / threadNum;

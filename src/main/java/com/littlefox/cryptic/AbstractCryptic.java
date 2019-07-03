@@ -4,12 +4,11 @@ package com.littlefox.cryptic;
  * @author rockychen
  */
 public abstract class AbstractCryptic {
-    protected final String secretKey;
-    protected final String algorithm;
 
-    protected AbstractCryptic(final String secretKey, final String algorithm) {
+    protected final String secretKey;
+
+    protected AbstractCryptic(final String secretKey) {
         this.secretKey = secretKey;
-        this.algorithm = algorithm;
     }
 
     public String encryptSelf(String str){

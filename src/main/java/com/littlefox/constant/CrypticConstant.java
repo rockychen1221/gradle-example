@@ -15,4 +15,7 @@ public class CrypticConstant {
     public static final String DELETE="DELETE";
     public static final String QUERY="QUERY";
 
+    public static final String STRING="STRING";
+    public static final String HASHMAP="HASHMAP";
+
 }

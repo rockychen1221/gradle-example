@@ -47,7 +47,6 @@ public class CrypticUtils {
                 text[i]=CrypticExecutor.dynamicDecrypt(str);
             }
         }
-        List<String> cities = Arrays.asList(text);
-        return String.join(",", cities);
+        return String.join(",", Arrays.asList(text));
     }
 }
