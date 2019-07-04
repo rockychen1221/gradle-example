@@ -18,4 +18,6 @@ public class CrypticConstant {
     public static final String STRING="STRING";
     public static final String HASHMAP="HASHMAP";
 
+    public static final String _COUNT="_COUNT";
+
 }

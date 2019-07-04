@@ -137,32 +137,39 @@ public class ExecutorInterceptor implements Interceptor {
         Method[] methods = Class.forName(className).getMethods();
         //过滤重写方法
         List<Method> methodList = Arrays.stream(methods).filter(m -> StringUtils.equals(m.getName(), methedName)).collect(Collectors.toList());
-        for (int i = 0; i < methodList.size(); i++) {
-            //过滤重写方法
-            if (methodList.size() > 1 && i == 0) {
-                continue;
+
+        if (methodList.size()>0||methedName.indexOf(CrypticConstant._COUNT)>-1){
+            //针对pagehelper插件处理
+            if (methedName.indexOf(CrypticConstant._COUNT)>-1){
+                methodList = Arrays.stream(methods).filter(m -> StringUtils.equals(m.getName()+CrypticConstant._COUNT, methedName)).collect(Collectors.toList());
             }
-            //获取重写方法
-            Method method = methodList.get(0);
-            Parameter[] params=method.getParameters();
-            for(Parameter p : params) {
-                if(p.getType().getTypeName().indexOf("model")>-1&&method.getParameterCount()==1||p.getName().equals("model")&&method.getParameterCount()==1){
-                    if(StringUtils.equalsIgnoreCase(CrypticConstant.QUERY, methodName)){
-                        fieldIsCrypt(parameter, CrypticConstant.BEFORE_SELECT);
-                        break;
-                    }else if (StringUtils.equalsIgnoreCase(CrypticConstant.UPDATE, methodName)) {
-                        // 修改直接返回
-                        new CrypticExecutor(crypticConfig.getCryptic()).updateField(parameter,commandType.name());
-                        return invocation.proceed();
-                    }
-                }else {
-                    CrypticField annotation=p.getDeclaredAnnotation(CrypticField.class);
-                    if (annotation!=null) {
+            for (int i = 0; i < methodList.size(); i++) {
+                //过滤重写方法
+                if (methodList.size() > 1 && i == 0) {
+                    continue;
+                }
+                //获取重写方法
+                Method method = methodList.get(0);
+                Parameter[] params=method.getParameters();
+                for(Parameter p : params) {
+                    if(p.getType().getTypeName().indexOf("model")>-1&&method.getParameterCount()==1||p.getName().equals("model")&&method.getParameterCount()==1){
                         if(StringUtils.equalsIgnoreCase(CrypticConstant.QUERY, methodName)){
-                            parameter = mapFieldIsCrypt(parameter, CrypticConstant.BEFORE_SELECT,p.getName(),annotation);
+                            fieldIsCrypt(parameter, CrypticConstant.BEFORE_SELECT);
+                            break;
                         }else if (StringUtils.equalsIgnoreCase(CrypticConstant.UPDATE, methodName)) {
                             // 修改直接返回
-                            parameter = mapFieldIsCrypt(parameter, CrypticConstant.UPDATE,p.getName(),annotation,commandType.name());
+                            new CrypticExecutor(crypticConfig.getCryptic()).updateField(parameter,commandType.name());
+                            return invocation.proceed();
+                        }
+                    }else {
+                        CrypticField annotation=p.getDeclaredAnnotation(CrypticField.class);
+                        if (annotation!=null) {
+                            if(StringUtils.equalsIgnoreCase(CrypticConstant.QUERY, methodName)){
+                                parameter = mapFieldIsCrypt(parameter, CrypticConstant.BEFORE_SELECT,p.getName(),annotation);
+                            }else if (StringUtils.equalsIgnoreCase(CrypticConstant.UPDATE, methodName)) {
+                                // 修改直接返回
+                                parameter = mapFieldIsCrypt(parameter, CrypticConstant.UPDATE,p.getName(),annotation,commandType.name());
+                            }
                         }
                     }
                 }
