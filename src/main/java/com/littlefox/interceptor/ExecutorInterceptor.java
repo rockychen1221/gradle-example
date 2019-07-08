@@ -92,16 +92,17 @@ public class ExecutorInterceptor implements Interceptor {
             return;
         }
 
-        Field[] fields = obj.getClass().getDeclaredFields();
+        Field[] allFields=CrypticExecutor.getAllFields(obj.getClass());
+        //Field[] fields = obj.getClass().getDeclaredFields();
         if (obj instanceof ArrayList<?>) {
-            fields =((ArrayList) obj).get(0).getClass().getDeclaredFields();
+            allFields =((ArrayList) obj).get(0).getClass().getDeclaredFields();
         }
         int len;
-        if (null != fields && 0 < (len = fields.length)) {
+        if (null != allFields && 0 < (len = allFields.length)) {
             // 标记是否有注解
             boolean isD = false;
             for (int i = 0; i < len; i++) {
-                if (fields[i].isAnnotationPresent(CrypticField.class)) {
+                if (allFields[i].isAnnotationPresent(CrypticField.class)) {
                     isD = true;
                     break;
                 }

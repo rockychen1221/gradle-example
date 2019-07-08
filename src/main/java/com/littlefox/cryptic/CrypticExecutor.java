@@ -5,6 +5,7 @@ import com.littlefox.constant.CrypticConstant;
 import com.littlefox.utils.CrypticUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 
 import java.lang.reflect.Field;
@@ -110,6 +111,11 @@ public class CrypticExecutor {
             if (allFields != null && allFields.length > 0) {
                 for (Field field : allFields) {
                     field.setAccessible(true);
+
+                    if (!isJavaClass(field.getType())){
+                        selectField(field.get(t), type);
+                    }
+
                     if (field.isAnnotationPresent(CrypticField.class) && field.getType().toString().endsWith("String")) {
                         CrypticField anno =field.getAnnotation(CrypticField.class);
                         String fieldValue = (String) field.get(t);
@@ -127,6 +133,9 @@ public class CrypticExecutor {
                         }
                     } else if (field.getType() == List.class) {
                         List list = (List)field.get(t);
+                        if(CollectionUtils.isEmpty(list)) {
+                            continue;
+                        }
                         for (int i = 0; i < list.size(); i++) {
                             selectField(list.get(i), type);
                         }
@@ -155,19 +164,19 @@ public class CrypticExecutor {
         try {
             if (allFields != null && allFields.length > 0) {
                 for (Field field : allFields) {
+                    field.setAccessible(true);
                     if (field.isAnnotationPresent(CrypticField.class) && field.getType().toString().endsWith("String")) {
                         CrypticField anno =field.getAnnotation(CrypticField.class);
-                        field.setAccessible(true);
                         String fieldValue = (String) field.get(t);
                         if(StringUtils.isEmpty(fieldValue)) {
                             continue;
                         }
                         switch (anno.type()){
                             case ONLY_ENCRYPT:
-                                if (!StringUtils.equalsAnyIgnoreCase(type,CrypticConstant.INSERT)){
+                                /*if (!StringUtils.equalsAnyIgnoreCase(type,CrypticConstant.INSERT)){
                                     field.set(t,defaultCryptic.decryptSelf(fieldValue));
-                                }
-                                //field.set(t,CrypticUtils.decryptSelf(fieldValue));
+                                }*/
+                                field.set(t,CrypticUtils.decryptSelf(fieldValue));
                                 break;
                             default:field.set(t, defaultCryptic.encryptSelf(fieldValue));break;
                         }
@@ -189,18 +198,22 @@ public class CrypticExecutor {
 
     /**
      * 获取类所有字段
-     * @param c
+     * @param clz
      * @return
      */
-    private static Field[] getAllFields(Class<?> c){
+    public static Field[] getAllFields(Class<?> clz){
         Field[] fields= null;
         // 获取父类，判断是否为实体类
-        if (c.getSuperclass() != Object.class) {
-            fields =getAllFields(c.getSuperclass());
+        if (clz.getSuperclass() != Object.class) {
+            fields =getAllFields(clz.getSuperclass());
         }
         // 获取类中的所有定义字段
-        Field[] declaredfields = c.getDeclaredFields();
+        Field[] declaredfields = clz.getDeclaredFields();
         return ArrayUtils.addAll(fields,declaredfields);
+    }
+
+    private static boolean isJavaClass(Class<?> clz) {
+        return clz != null && clz.getClassLoader() == null;
     }
 
 }
