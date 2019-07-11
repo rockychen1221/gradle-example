@@ -60,6 +60,12 @@ ONLY_ENCRYPT 仅加密,数据库存储为明文，查询出来加密，通过该
 ## 2019.07.08
 修改对象继承判断逻辑，加入嵌套bean处理
 
+## 2019.07.10
+支持传入参数为List<String>场景，支持批量处理
+
+## 2019.07.11
+优化代码
+修改对象继承中包含枚举类的判断逻辑，会导致堆栈溢出
 
 ### 待解决
 - [x] pagehelper 分页bug
@@ -68,13 +74,14 @@ ONLY_ENCRYPT 仅加密,数据库存储为明文，查询出来加密，通过该
 
 ### Next
 - [ ] 针对每种情况编写测试实例
-
+- [ ] 完善算法种类
+- [ ] 看有没有抽取成为jar的可能
 
 ### 遇到的问题
 
 1. gradle lombok无法使用 （gradle版本问题 4.7以上不能使用 compile("org.projectlombok:lombok:1.18.2")或者compileOnly("org.projectlombok:lombok:1.18.2")）
 2. 注册多个@Component 时，感觉是按照代码结构从上往下扫描的
-
+3.
 
 ### 注：
 
@@ -82,6 +89,7 @@ ONLY_ENCRYPT 仅加密,数据库存储为明文，查询出来加密，通过该
 2. `JavaBean`处理只针对在`model`包下，并且参数个数只有一个，请遵守约定
 3. 对于查询返回结果不是`JavaBean` or `List<T>` 目前还没处理(可实现)，举例返回值是`String`等
 4. `CrypticField`对于用户查询不友好（模糊查询，范围查询），因为数据库存储的是密文
+5. 对于mybatis Sql 语法只能使用#{XXX},不能使用${XXX},因为在获取执行SQL的时候${XXX}会事先编译，而#{XXX}则会保留占位符？
 
 ## About example:
 利用mybatis Interceptor 拦截修改和查询操作，对于参数/结果集进行加解密处理
