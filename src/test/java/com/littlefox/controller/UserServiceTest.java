@@ -223,6 +223,9 @@ public class UserServiceTest {
         //users.forEach(user -> System.out.println(user.toString()));
     }
 
+    /**
+     * 测试pagehelper分页
+     */
     @Test
     public void queryPageList() {
         long startTime = System.currentTimeMillis();    //获取开始时间
@@ -232,7 +235,6 @@ public class UserServiceTest {
         users2.getList().forEach(user2 -> System.out.println(user2.toString()));
     }
 
-
     @Test
     public void update() {
         long startTime = System.currentTimeMillis();    //获取开始时间
@@ -240,7 +242,6 @@ public class UserServiceTest {
         long endTime = System.currentTimeMillis();    //获取结束时间
         System.out.println("程序运行时间：" + (endTime - startTime) + "ms");    //输出程序运行时间
     }
-
 
     @Test
     public void delete() {
