@@ -3,11 +3,13 @@ package com.littlefox.algorithm;
 import com.littlefox.cryptic.AbstractCryptic;
 import com.littlefox.cryptic.Cryptic;
 import com.littlefox.utils.sm4.SM4Utils;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * 对称加密 SM4CBC
  * @author rockychen
  */
+@Slf4j
 public class SM4ECB extends AbstractCryptic implements Cryptic {
 
     public SM4ECB(String secretKey) {
@@ -16,11 +18,21 @@ public class SM4ECB extends AbstractCryptic implements Cryptic {
 
     @Override
     public String encryptSelf(String str) {
-        return new SM4Utils(this.secretKey).encryptData_ECB(str);
+        try {
+            return new SM4Utils(this.secretKey).encryptData_ECB(str);
+        }catch (Exception e){
+            log.error("SM4ECB decryptSelf Error : {0}",str);
+            return super.decryptSelf(str);
+        }
     }
 
     @Override
     public String decryptSelf(String str) {
-        return new SM4Utils(this.secretKey).decryptData_ECB(str);
+        try {
+            return new SM4Utils(this.secretKey).decryptData_ECB(str);
+        }catch (Exception e){
+            log.error("SM4ECB decryptSelf Error : {0}",str);
+            return super.decryptSelf(str);
+        }
     }
 }

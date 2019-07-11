@@ -16,8 +16,8 @@ import org.apache.ibatis.session.ResultHandler;
 import org.apache.ibatis.session.RowBounds;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.*;
@@ -54,8 +54,32 @@ public class ExecutorInterceptor implements Interceptor {
         String type=CrypticConstant.STRING;
         if (obj instanceof HashMap<?,?>) {
             Map map=(HashMap<?, ?>)obj;
-            value=(String) map.get(key);
+            if(map.containsKey("collection")){
+                Object collection=map.get("collection");
+                Object object=mapFieldIsCrypt(collection,typeName,key,annotation);
+                ((HashMap<String, Object>)obj).put("collection",object);
+                ((HashMap<String, Object>)obj).put("list",object);
+                return obj;
+            }else {
+                value=(String) map.get(key);
+            }
             type=CrypticConstant.HASHMAP;
+        }else if (obj instanceof ArrayList<?>) {
+            List<?> list = (ArrayList<?>) obj;
+            if(!CollectionUtils.isEmpty(list)) {
+                return (List) list.stream().map(o -> {
+                    return mapFieldIsCrypt(o,typeName,key,annotation);
+                }).collect(Collectors.toList());
+            }
+            type=CrypticConstant.ARRAYLIST;
+        }else if (obj instanceof List<?>) {
+            List<?> list = (List<String>) obj;
+            if(!CollectionUtils.isEmpty(list)) {
+                return (List) list.stream().map(o -> {
+                    return mapFieldIsCrypt(o,typeName,key,annotation);
+                }).collect(Collectors.toList());
+            }
+            type=CrypticConstant.ARRAYLIST;
         }else if (obj instanceof String){
             value= (String) obj;
         }
@@ -79,43 +103,6 @@ public class ExecutorInterceptor implements Interceptor {
             return strCommaSeparated;
         }
         return obj;
-    }
-
-    /**
-     * 处理javaBean
-     * @param obj
-     * @param typeName
-     */
-    private void fieldIsCrypt(Object obj,String typeName){
-
-        if(obj==null){
-            return;
-        }
-
-        Field[] allFields=CrypticExecutor.getAllFields(obj.getClass());
-        //Field[] fields = obj.getClass().getDeclaredFields();
-        if (obj instanceof ArrayList<?>) {
-            allFields =((ArrayList) obj).get(0).getClass().getDeclaredFields();
-        }
-        int len;
-        if (null != allFields && 0 < (len = allFields.length)) {
-            // 标记是否有注解
-            boolean isD = false;
-            for (int i = 0; i < len; i++) {
-                if (allFields[i].isAnnotationPresent(CrypticField.class)) {
-                    isD = true;
-                    break;
-                }
-            }
-            if (isD) {
-                if (StringUtils.equalsIgnoreCase(typeName, CrypticConstant.BEFORE_SELECT)){
-                    new CrypticExecutor(crypticConfig.getCryptic()).selectField(obj,typeName);
-                } else if (StringUtils.equalsIgnoreCase(typeName, CrypticConstant.AFTER_SELECT)){
-                    List<?> list = (ArrayList<?>) obj;
-                    list.forEach(l -> new CrypticExecutor(crypticConfig.getCryptic()).selectField(l,typeName));
-                }
-            }
-        }
     }
 
     @Override
@@ -153,14 +140,20 @@ public class ExecutorInterceptor implements Interceptor {
                 Method method = methodList.get(0);
                 Parameter[] params=method.getParameters();
                 for(Parameter p : params) {
-                    if(p.getType().getTypeName().indexOf("model")>-1&&method.getParameterCount()==1||p.getName().equals("model")&&method.getParameterCount()==1){
+                    if(!CrypticExecutor.isJavaClass(p.getType())||p.getType().getTypeName().indexOf("model")>-1||p.getName().equals("model")){
                         if(StringUtils.equalsIgnoreCase(CrypticConstant.QUERY, methodName)){
-                            fieldIsCrypt(parameter, CrypticConstant.BEFORE_SELECT);
-                            break;
+                            new CrypticExecutor(crypticConfig.getCryptic()).selectField(parameter,CrypticConstant.BEFORE_SELECT);
+
                         }else if (StringUtils.equalsIgnoreCase(CrypticConstant.UPDATE, methodName)) {
                             // 修改直接返回
                             new CrypticExecutor(crypticConfig.getCryptic()).updateField(parameter,commandType.name());
-                            return invocation.proceed();
+                        }
+                    }else if(p.getType()== List.class&&p.getDeclaredAnnotation(CrypticField.class)==null){
+                        if(StringUtils.equalsIgnoreCase(CrypticConstant.QUERY, methodName)){
+                            new CrypticExecutor(crypticConfig.getCryptic()).selectField(parameter,CrypticConstant.BEFORE_SELECT);
+                        }else if (StringUtils.equalsIgnoreCase(CrypticConstant.UPDATE, methodName)) {
+                            // 修改直接返回
+                            new CrypticExecutor(crypticConfig.getCryptic()).updateField(parameter,commandType.name());
                         }
                     }else {
                         CrypticField annotation=p.getDeclaredAnnotation(CrypticField.class);
@@ -213,7 +206,7 @@ public class ExecutorInterceptor implements Interceptor {
             if (null == obj)  // 这里虽然list不是空，但是返回字符串等有可能为空
                 return returnValue;
 
-            fieldIsCrypt(list,CrypticConstant.AFTER_SELECT);
+            new CrypticExecutor(crypticConfig.getCryptic()).selectField(list,CrypticConstant.AFTER_SELECT);
         }
         return returnValue;
     }

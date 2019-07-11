@@ -21,7 +21,7 @@ public class AES extends AbstractCryptic implements Cryptic {
         try {
             return AESUtils.encrypt(this.secretKey,str);
         } catch (Exception e) {
-            log.error("AES encryptSelf error : {}",e);
+            log.error("AES encryptSelf Error : {0}",str);
             return super.decryptSelf(str);
         }
     }
@@ -31,7 +31,7 @@ public class AES extends AbstractCryptic implements Cryptic {
         try {
             return AESUtils.decrypt(this.secretKey,str);
         } catch (Exception e) {
-            log.error("AES decryptSelf error : {}",e);
+            log.error("AES decryptSelf Error : {0}",str);
             return super.decryptSelf(str);
         }
     }

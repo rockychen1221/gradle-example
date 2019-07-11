@@ -9,7 +9,10 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 算法执行器类，负责选择正确的算法加解密数据
@@ -100,6 +103,18 @@ public class CrypticExecutor {
      * @param <T>
      */
     public <T> void selectField(T t,String type) {
+        if (t == null) {
+            return;
+        }
+
+        //修改批量插入逻辑判断
+        if (t instanceof List<?>) {
+            List<?> list = (ArrayList<?>) t;
+            if(!CollectionUtils.isEmpty(list)) {
+                list.forEach(l -> selectField(l,type));
+            }
+        }
+
         final Cryptic defaultCryptic = getCrypticInterface();
 
         if (defaultCryptic == null) {
@@ -111,7 +126,9 @@ public class CrypticExecutor {
             if (allFields != null && allFields.length > 0) {
                 for (Field field : allFields) {
                     field.setAccessible(true);
-
+                    if (field.isEnumConstant()){
+                        continue;
+                    }
                     if (!isJavaClass(field.getType())){
                         selectField(field.get(t), type);
                     }
@@ -154,6 +171,27 @@ public class CrypticExecutor {
      */
     public <T> void updateField(T t,String type) {
 
+        if (t == null) {
+            return;
+        }
+        //修改批量插入逻辑判断
+        if (t instanceof HashMap<?,?>) {
+            Map map=(HashMap<?, ?>)t;
+            if(map.containsKey("collection")){
+                Object obj=map.get("collection");
+                updateField(obj,type);
+                obj=map.get("collection");
+                map.put("collection",obj);
+            }
+        }
+
+        if (t instanceof ArrayList<?>){
+            List<?> list = (ArrayList<?>) t;
+            if(!CollectionUtils.isEmpty(list)) {
+                list.forEach(l -> updateField(l,type));
+            }
+        }
+
         final Cryptic defaultCryptic = getCrypticInterface();
 
         if (defaultCryptic == null || defaultCryptic ==null) {
@@ -165,6 +203,13 @@ public class CrypticExecutor {
             if (allFields != null && allFields.length > 0) {
                 for (Field field : allFields) {
                     field.setAccessible(true);
+                    if (field.isEnumConstant()){
+                        continue;
+                    }
+                    //2019.7.10
+                    if (!isJavaClass(field.getType())){
+                        updateField(field.get(t), type);
+                    }
                     if (field.isAnnotationPresent(CrypticField.class) && field.getType().toString().endsWith("String")) {
                         CrypticField anno =field.getAnnotation(CrypticField.class);
                         String fieldValue = (String) field.get(t);
@@ -179,6 +224,14 @@ public class CrypticExecutor {
                                 field.set(t,CrypticUtils.decryptSelf(fieldValue));
                                 break;
                             default:field.set(t, defaultCryptic.encryptSelf(fieldValue));break;
+                        }
+                    } else if (field.getType() == List.class) {//2019.7.10
+                        List list = (List)field.get(t);
+                        if(CollectionUtils.isEmpty(list)) {
+                            continue;
+                        }
+                        for (int i = 0; i < list.size(); i++) {
+                            updateField(list.get(i), type);
                         }
                     }
                 }
@@ -212,7 +265,7 @@ public class CrypticExecutor {
         return ArrayUtils.addAll(fields,declaredfields);
     }
 
-    private static boolean isJavaClass(Class<?> clz) {
+    public static boolean isJavaClass(Class<?> clz) {
         return clz != null && clz.getClassLoader() == null;
     }
 
