@@ -42,9 +42,9 @@ public class CrypticUtils {
 
         for (int i=0;i<strArrays.length;i++){
             if (StringUtils.equalsAnyIgnoreCase(method,"encryptSelf")){
-                text[i]= CrypticExecutor.dynamicEncrypt(str);
+                text[i]= CrypticExecutor.dynamicEncrypt(strArrays[i]);
             }else if (StringUtils.equalsAnyIgnoreCase(method,"decryptSelf")){
-                text[i]=CrypticExecutor.dynamicDecrypt(str);
+                text[i]=CrypticExecutor.dynamicDecrypt(strArrays[i]);
             }
         }
         return String.join(",", Arrays.asList(text));
