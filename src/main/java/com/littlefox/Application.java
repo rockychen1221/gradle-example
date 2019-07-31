@@ -1,7 +1,7 @@
 package com.littlefox;
 
-import com.littlefox.model.User;
-import com.littlefox.service.UserService;
+import com.littlefox.example.model.User;
+import com.littlefox.example.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
@@ -16,7 +16,7 @@ import java.util.concurrent.Executors;
 
 @Slf4j
 @SpringBootApplication
-@MapperScan("com.littlefox.**.dao")
+@MapperScan("com.littlefox.example.**.dao")
 public class Application {
 
 	static int numb=0;

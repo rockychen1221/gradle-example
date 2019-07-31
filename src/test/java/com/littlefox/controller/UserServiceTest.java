@@ -1,8 +1,8 @@
 package com.littlefox.controller;
 
 import com.github.pagehelper.PageInfo;
-import com.littlefox.model.User;
-import com.littlefox.service.UserService;
+import com.littlefox.example.model.User;
+import com.littlefox.example.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -235,10 +235,29 @@ public class UserServiceTest {
         users2.getList().forEach(user2 -> System.out.println(user2.toString()));
     }
 
+    /**
+     * by ID
+     */
+    @Test
+    public void queryById() {
+        long startTime = System.currentTimeMillis();
+        //获取开始时间
+        User user=userService.queryById(User.builder().id("5C070830295AD870F3DC867AB24CA22B").build());
+        User user2=userService.queryById(User.builder().id("5C070830295AD870F3DC867AB24CA22B").build());
+
+        long endTime = System.currentTimeMillis();    //获取结束时间
+        System.out.println("程序运行时间：" + (endTime - startTime) + "ms");    //输出程序运行时间
+        System.out.println(user.toString());
+        System.out.println(user2.toString());
+    }
+
     @Test
     public void update() {
         long startTime = System.currentTimeMillis();    //获取开始时间
-        userService.update(User.builder().id("3CB77C649AD0A2119D1E07D58CA01642").userName("userName,rockychen").build());
+        User user=User.builder().id("5C070830295AD870F3DC867AB24CA22B").phone("17621210966").userName("userName,rockychen").build();
+        user.setAge("23");
+        user.setAddress("shanghai");
+        userService.update(user);
         long endTime = System.currentTimeMillis();    //获取结束时间
         System.out.println("程序运行时间：" + (endTime - startTime) + "ms");    //输出程序运行时间
     }
