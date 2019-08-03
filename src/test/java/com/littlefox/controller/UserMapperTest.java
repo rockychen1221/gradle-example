@@ -1,8 +1,9 @@
 package com.littlefox.controller;
 
+import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.littlefox.example.dao.UserMapper;
 import com.littlefox.example.model.User;
-import com.littlefox.example.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -19,11 +20,10 @@ import java.util.concurrent.Executors;
 @Slf4j
 @RunWith(SpringRunner.class)
 @SpringBootTest
-public class UserServiceTest {
+public class UserMapperTest {
 
     @Resource
-    private UserService userService;
-
+    private UserMapper userMapper;
 
     static class MyThread implements Runnable {
         private List<String> list;
@@ -123,7 +123,7 @@ public class UserServiceTest {
                     User user = User.builder()
                             .userName("userName" + i).phone("phone" + i)
                             .build();
-                    userService.insert(user);
+                    userMapper.insert(user);
                 }
 
                 System.out.println("countDownLatch"+countDownLatch);
@@ -202,7 +202,7 @@ public class UserServiceTest {
 
         //List<User> users=userService.queryList(new HashMap<>());
         //users.forEach(user -> System.out.println(user.toString()));
-        List<User> users2 = userService.queryUserList(User.builder().build());
+        List<User> users2 = userMapper.queryUserList(User.builder().build());
 
         System.out.println(users2.size());
         long endTime = System.currentTimeMillis();    //获取结束时间
@@ -216,7 +216,7 @@ public class UserServiceTest {
     public void queryUserList() {
         long startTime = System.currentTimeMillis();    //获取开始时间
         //List<User> users2 = userService.queryUserList(User.builder().id("F98B1ACAAE38C2C512E14034F82C6993").build());
-        List<User> users = userService.queryUserList(User.builder().build());
+        List<User> users = userMapper.queryUserList(User.builder().build());
         System.out.println("查询总数量:"+users.size());
         long endTime = System.currentTimeMillis();    //获取结束时间
         System.out.println("程序运行时间：" + (endTime - startTime) + "ms");    //输出程序运行时间
@@ -229,7 +229,12 @@ public class UserServiceTest {
     @Test
     public void queryPageList() {
         long startTime = System.currentTimeMillis();    //获取开始时间
-        PageInfo<User> users2 = userService.selectPageUserList(User.builder().build(), 0, 10);
+        //分页
+        PageHelper.startPage(0,10,true);
+        //查询数据
+        List<User> list = userMapper.queryUserList(User.builder().build());
+        //返回分页后集合
+        PageInfo<User> users2 = new PageInfo<User>(list);
         long endTime = System.currentTimeMillis();    //获取结束时间
         System.out.println("程序运行时间：" + (endTime - startTime) + "ms");    //输出程序运行时间
         users2.getList().forEach(user2 -> System.out.println(user2.toString()));
@@ -242,13 +247,25 @@ public class UserServiceTest {
     public void queryById() {
         long startTime = System.currentTimeMillis();
         //获取开始时间
-        User user=userService.queryById(User.builder().id("5C070830295AD870F3DC867AB24CA22B").build());
-        User user2=userService.queryById(User.builder().id("5C070830295AD870F3DC867AB24CA22B").build());
+        User user=userMapper.queryById(User.builder().id("5C070830295AD870F3DC867AB24CA22B").build());
 
         long endTime = System.currentTimeMillis();    //获取结束时间
         System.out.println("程序运行时间：" + (endTime - startTime) + "ms");    //输出程序运行时间
         System.out.println(user.toString());
-        System.out.println(user2.toString());
+    }
+
+    /**
+     * by ID
+     */
+    @Test
+    public void query() {
+        long startTime = System.currentTimeMillis();
+        //获取开始时间
+        User user=userMapper.query("5C070830295AD870F3DC867AB24CA22B");
+
+        long endTime = System.currentTimeMillis();    //获取结束时间
+        System.out.println("程序运行时间：" + (endTime - startTime) + "ms");    //输出程序运行时间
+        System.out.println(user.toString());
     }
 
     @Test
@@ -257,7 +274,7 @@ public class UserServiceTest {
         User user=User.builder().id("5C070830295AD870F3DC867AB24CA22B").phone("17621210966").userName("userName,rockychen").build();
         user.setAge("23");
         user.setAddress("shanghai");
-        userService.update(user);
+        userMapper.update(user);
         long endTime = System.currentTimeMillis();    //获取结束时间
         System.out.println("程序运行时间：" + (endTime - startTime) + "ms");    //输出程序运行时间
     }
@@ -265,7 +282,7 @@ public class UserServiceTest {
     @Test
     public void delete() {
         long startTime = System.currentTimeMillis();    //获取开始时间
-        userService.delete(User.builder().userName("userName5").build());
+        userMapper.delete(User.builder().userName("userName5").build());
         long endTime = System.currentTimeMillis();    //获取结束时间
         System.out.println("程序运行时间：" + (endTime - startTime) + "ms");    //输出程序运行时间
     }

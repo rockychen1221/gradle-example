@@ -58,6 +58,9 @@ public class User extends Person{
 
 ## 更新日志
 
+### 2019.08.03
+修改 `Param` 注解逻辑
+
 ### 2019.07.31
 优化代码,fix
 
@@ -109,11 +112,12 @@ ONLY_ENCRYPT 仅加密,数据库存储为明文，查询出来加密，通过该
 1. gradle lombok无法使用 （gradle版本问题 4.7以上不能使用 compile("org.projectlombok:lombok:1.18.2")或者compileOnly("org.projectlombok:lombok:1.18.2")）
 2. 注册多个@Component 时，感觉是按照代码结构从上往下扫描的
 3. 类中含有枚举类时，会存在循环查找
+4. 在同一个方法中，当一个查询出来的结果对象，作为另外一个查询的查询参数，需要将对象实现 `Cloneable` 接口，将克隆对象作为参数传递查询
 
 ## 性能
 
 
-|数量|AES|SM4ECB|SM4CBC|
+|数据量|AES|SM4ECB|SM4CBC|
 |:----:|:----:|:----:|:----:|
 |10W||-|-|
 |50W|13.468s|-|-|

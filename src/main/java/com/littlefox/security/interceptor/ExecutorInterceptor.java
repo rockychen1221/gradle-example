@@ -1,11 +1,12 @@
 package com.littlefox.security.interceptor;
 
+import com.littlefox.security.algorithm.AlgorithmExecutor;
 import com.littlefox.security.annotation.CrypticField;
 import com.littlefox.security.constant.CrypticConstant;
-import com.littlefox.security.algorithm.AlgorithmExecutor;
 import com.littlefox.security.utils.AlgorithmConfig;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.cache.CacheKey;
 import org.apache.ibatis.executor.Executor;
 import org.apache.ibatis.mapping.BoundSql;
@@ -19,6 +20,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.*;
@@ -141,15 +143,7 @@ public class ExecutorInterceptor implements Interceptor {
                 Method method = methodList.get(0);
                 Parameter[] params=method.getParameters();
                 for(Parameter p : params) {
-                    if(!AlgorithmExecutor.isJavaClass(p.getType())||p.getType().getTypeName().indexOf("model")>-1||p.getName().equals("model")){
-                        if(StringUtils.equalsIgnoreCase(CrypticConstant.QUERY, methodName)){
-                            new AlgorithmExecutor(algorithmConfig.getCrypticAlgorithm()).selectField(parameter,CrypticConstant.BEFORE_SELECT);
-
-                        }else if (StringUtils.equalsIgnoreCase(CrypticConstant.UPDATE, methodName)) {
-                            // 修改直接返回
-                            new AlgorithmExecutor(algorithmConfig.getCrypticAlgorithm()).updateField(parameter,commandType.name());
-                        }
-                    }else if(p.getType()== List.class&&p.getDeclaredAnnotation(CrypticField.class)==null){
+                    if(!AlgorithmExecutor.isJavaClass(p.getType())||p.getType().getTypeName().indexOf("model")>-1||p.getName().equals("model")||p.getType()== List.class&&p.getDeclaredAnnotation(CrypticField.class)==null){
                         if(StringUtils.equalsIgnoreCase(CrypticConstant.QUERY, methodName)){
                             new AlgorithmExecutor(algorithmConfig.getCrypticAlgorithm()).selectField(parameter,CrypticConstant.BEFORE_SELECT);
                         }else if (StringUtils.equalsIgnoreCase(CrypticConstant.UPDATE, methodName)) {
@@ -157,13 +151,21 @@ public class ExecutorInterceptor implements Interceptor {
                             new AlgorithmExecutor(algorithmConfig.getCrypticAlgorithm()).updateField(parameter,commandType.name());
                         }
                     }else {
+                        Annotation[] declaredAnnotations=p.getDeclaredAnnotations();
+                        //
+                        final String[] paramKey = {p.getName()};
+                        Arrays.stream(declaredAnnotations).forEach(annotation -> {
+                            if (StringUtils.equalsAnyIgnoreCase(annotation.annotationType().getSimpleName(),"Param")){
+                                paramKey[0] =p.getDeclaredAnnotation(Param.class).value();
+                            }
+                        });
                         CrypticField annotation=p.getDeclaredAnnotation(CrypticField.class);
                         if (annotation!=null) {
                             if(StringUtils.equalsIgnoreCase(CrypticConstant.QUERY, methodName)){
-                                parameter = mapFieldIsCrypt(parameter, CrypticConstant.BEFORE_SELECT,p.getName(),annotation);
+                                parameter = mapFieldIsCrypt(parameter, CrypticConstant.BEFORE_SELECT,paramKey[0],annotation);
                             }else if (StringUtils.equalsIgnoreCase(CrypticConstant.UPDATE, methodName)) {
                                 // 修改直接返回
-                                parameter = mapFieldIsCrypt(parameter, CrypticConstant.UPDATE,p.getName(),annotation,commandType.name());
+                                parameter = mapFieldIsCrypt(parameter, CrypticConstant.UPDATE,paramKey[0],annotation,commandType.name());
                             }
                         }
                     }
