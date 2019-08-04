@@ -58,6 +58,9 @@ public class User extends Person{
 
 ## 更新日志
 
+### 2019.08.04
+add Test example and DES
+
 ### 2019.08.03
 修改 `Param` 注解逻辑
 
@@ -98,8 +101,11 @@ ENCRYPT （默认）加解密,数据库存储为密文，查询解密展示，�
 ONLY_ENCRYPT 仅加密,数据库存储为明文，查询出来加密，通过该值进行查询前会先解密 （适合在前端参数传递使用）一般这个实际情况用的会多一些
 
 ## 待解决
+
 ~~pagehelper 分页bug~~
+
 ~~嵌套对象逻辑处理~~
+
 ~~对象继承处理~~
 
 ## Next
