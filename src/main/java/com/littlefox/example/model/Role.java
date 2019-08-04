@@ -15,5 +15,7 @@ public class Role {
     @CrypticField(type = CrypticField.Type.ONLY_ENCRYPT)
     private String roleId;
 
+    private String userId;
+
     private String roleName;
 }

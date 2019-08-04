@@ -74,7 +74,6 @@ public class ExecutorInterceptor implements Interceptor {
                     return mapFieldIsCrypt(o,typeName,key,annotation);
                 }).collect(Collectors.toList());
             }
-            type=CrypticConstant.ARRAYLIST;
         }else if (obj instanceof List<?>) {
             List<?> list = (List<String>) obj;
             if(!CollectionUtils.isEmpty(list)) {
@@ -82,7 +81,6 @@ public class ExecutorInterceptor implements Interceptor {
                     return mapFieldIsCrypt(o,typeName,key,annotation);
                 }).collect(Collectors.toList());
             }
-            type=CrypticConstant.ARRAYLIST;
         }else if (obj instanceof String){
             value= (String) obj;
         }
@@ -152,7 +150,7 @@ public class ExecutorInterceptor implements Interceptor {
                         }
                     }else {
                         Annotation[] declaredAnnotations=p.getDeclaredAnnotations();
-                        //
+                        //默认取方法参数名
                         final String[] paramKey = {p.getName()};
                         Arrays.stream(declaredAnnotations).forEach(annotation -> {
                             if (StringUtils.equalsAnyIgnoreCase(annotation.annotationType().getSimpleName(),"Param")){

@@ -15,14 +15,12 @@ public class AESUtils {
         Cipher cipher = Cipher.getInstance(ENCRYPT_TYPE);
         cipher.init(Cipher.ENCRYPT_MODE, generateMySQLAESKey(key));
         return new String(Hex.encodeHex(cipher.doFinal(str.getBytes(ENCODING)))).toUpperCase();
-
     }
 
     public static String decrypt(String key, String str) throws Exception {
         Cipher cipher = Cipher.getInstance(ENCRYPT_TYPE);
         cipher.init(Cipher.DECRYPT_MODE, generateMySQLAESKey(key));
         return new String(cipher.doFinal(Hex.decodeHex(str.toCharArray())));
-
     }
 
     /**

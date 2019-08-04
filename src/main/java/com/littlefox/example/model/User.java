@@ -3,6 +3,8 @@ package com.littlefox.example.model;
 import com.littlefox.security.annotation.CrypticField;
 import lombok.*;
 
+import java.util.List;
+
 /**
  * 用户
  * @author rockychen
@@ -14,6 +16,7 @@ import lombok.*;
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 public class User extends Person{
+
     @CrypticField(type = CrypticField.Type.ONLY_ENCRYPT)
     private String id;
 
@@ -21,5 +24,7 @@ public class User extends Person{
 
     @CrypticField
     private String phone;
+
+    private List<Role> roles;
 
 }

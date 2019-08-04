@@ -11,10 +11,24 @@
     <result column="address" jdbcType="VARCHAR" property="address" />
   </resultMap>
 
+  <resultMap id="UserRoleMap" type="com.littlefox.example.model.User">
+    <result column="id" jdbcType="VARCHAR" property="id" />
+    <result column="user_name" jdbcType="VARCHAR" property="userName" />
+    <result column="phone" jdbcType="VARCHAR" property="phone" />
+    <result column="lid" jdbcType="VARCHAR" property="lid" />
+    <result column="age" jdbcType="VARCHAR" property="age" />
+    <result column="address" jdbcType="VARCHAR" property="address" />
+    <collection property="roles" ofType="com.littlefox.example.model.Role">
+      <result property="roleId" column="l_role_id"/>
+      <result property="userId" column="l_user_id"/>
+      <result property="roleName" column="vc_role_name"/>
+    </collection>
+  </resultMap>
+
   <insert id="insert" parameterType="com.littlefox.example.model.User">
     insert into TEST_USER (user_name, phone,lid,age,address
       )
-    values (#{userName,jdbcType=VARCHAR}, #{phone,jdbcType=VARCHAR}, #{lid,jdbcType=VARCHAR},  #{age,jdbcType=VARCHAR},#{address,jdbcType=VARCHAR}
+    values (#{userName,jdbcType=VARCHAR}, #{phone,jdbcType=VARCHAR}, #{lid,jdbcType=VARCHAR}, #{age,jdbcType=VARCHAR},#{address,jdbcType=VARCHAR}
       )
   </insert>
 
@@ -73,5 +87,15 @@
   <delete id="delete">
     delete TEST_USER where id = #{id}
   </delete>
+
+  <select id="queryUserRole" parameterType="java.lang.String" resultMap="UserRoleMap">
+    select * from TEST_USER  tu left join TEST_ROLE tr
+    on tu.id=tr.l_user_id
+    <where>
+      <if test="userId != null">
+        and tu.id = #{userId}
+      </if>
+    </where>
+  </select>
 
 </mapper>

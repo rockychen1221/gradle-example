@@ -34,4 +34,6 @@ public interface UserMapper extends GenericMapper<User,String> {
 
     User query(@CrypticField(type = CrypticField.Type.ONLY_ENCRYPT) @Param("userId") String id);
 
+    User queryUserRole(@CrypticField(type = CrypticField.Type.ONLY_ENCRYPT) @Param("userId") String id);
+
 }
