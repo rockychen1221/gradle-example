@@ -1,10 +1,10 @@
 package com.littlefox.security.interceptor;
 
-import com.littlefox.security.algorithm.AlgorithmExecutor;
-import com.littlefox.security.annotation.CrypticField;
-import com.littlefox.security.constant.CrypticConstant;
-import com.littlefox.security.utils.AlgorithmConfig;
+import com.littlefox.security.annotation.Cryptic;
+import com.littlefox.security.constant.CrypticConst;
+import com.littlefox.security.utils.CrypticParamUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.cache.CacheKey;
@@ -15,20 +15,29 @@ import org.apache.ibatis.mapping.SqlCommandType;
 import org.apache.ibatis.plugin.*;
 import org.apache.ibatis.session.ResultHandler;
 import org.apache.ibatis.session.RowBounds;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.ObjectUtils;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Properties;
 import java.util.stream.Collectors;
 
+
 /**
- * 拦截器处理
- * @author rockychen
+ * 全局拦截数据库创建和更新
+ * <p>
+ * Signature 对应 Invocation 构造器, type 为 Invocation.Object, method 为 Invocation.Method, args 为 Invocation.Object[]
+ * method 对应的 update 包括了最常用的 insert/update/delete 三种操作, 因此 update 本身无法直接判断sql为何种执行过程
+ * args 包含了其余多有的操作信息, 按数组进行存储, 不同的拦截方式有不同的参数顺序, 具体看type接口的方法签名, 然后根据签名解析, 参见官网
+ *
+ * @link http://www.mybatis.org/mybatis-3/zh/configuration.html#plugins 插件
+ * <p>
+ * MappedStatement 包括了SQL具体操作类型, 需要通过该类型判断当前sql执行过程
  */
 @Slf4j
 @Component
@@ -37,81 +46,13 @@ import java.util.stream.Collectors;
         @Signature(type = Executor.class, method = "query", args = {MappedStatement.class, Object.class, RowBounds.class, ResultHandler.class}),
         @Signature(type = Executor.class, method = "query", args = {MappedStatement.class, Object.class, RowBounds.class, ResultHandler.class, CacheKey.class, BoundSql.class})
 })
+@ConditionalOnProperty(prefix = "cryptic", name = "enable", havingValue = "true")
 public class ExecutorInterceptor implements Interceptor {
 
-    @Autowired
-    private AlgorithmConfig algorithmConfig;
-
-    /**
-     * 处理map or string参数
-     * @param obj
-     * @param typeName
-     * @param key
-     * @param annotation
-     */
-    private Object mapFieldIsCrypt(Object obj, String typeName, String key, CrypticField annotation, String... action){
-        if (obj==null){
-            return null;
-        }
-        String value= "";
-        String type=CrypticConstant.STRING;
-        if (obj instanceof HashMap<?,?>) {
-            Map map=(HashMap<?, ?>)obj;
-            if(map.containsKey("collection")){
-                Object collection=map.get("collection");
-                Object object=mapFieldIsCrypt(collection,typeName,key,annotation);
-                ((HashMap<String, Object>)obj).put("collection",object);
-                ((HashMap<String, Object>)obj).put("list",object);
-                return obj;
-            }else {
-                value=(String) map.get(key);
-            }
-            type=CrypticConstant.HASHMAP;
-        }else if (obj instanceof ArrayList<?>) {
-            List<?> list = (ArrayList<?>) obj;
-            if(!CollectionUtils.isEmpty(list)) {
-                return (List) list.stream().map(o -> {
-                    return mapFieldIsCrypt(o,typeName,key,annotation);
-                }).collect(Collectors.toList());
-            }
-        }else if (obj instanceof List<?>) {
-            List<?> list = (List<String>) obj;
-            if(!CollectionUtils.isEmpty(list)) {
-                return (List) list.stream().map(o -> {
-                    return mapFieldIsCrypt(o,typeName,key,annotation);
-                }).collect(Collectors.toList());
-            }
-        }else if (obj instanceof String){
-            value= (String) obj;
-        }
-
-        if (StringUtils.isBlank(value)){
-            return null;
-        }
-        //处理加密参数字符串形式
-        String [] str=value.split(",");
-        String [] text=new String[str.length];
-
-        for (int i=0;i<str.length;i++){
-            text[i]=new AlgorithmExecutor(algorithmConfig.getCrypticAlgorithm()).selectMapField(str[i],typeName,annotation);
-        }
-        List<String> cities = Arrays.asList(text);
-        String strCommaSeparated = String.join(",", cities);
-
-        if(StringUtils.equalsAnyIgnoreCase(type,CrypticConstant.HASHMAP)){
-            ((HashMap<String, String>)obj).put(key,strCommaSeparated);
-        }else {
-            return strCommaSeparated;
-        }
-        return obj;
-    }
+    private String countSuffix = "_COUNT";
 
     @Override
     public Object intercept(Invocation invocation) throws Throwable {
-
-        if (ObjectUtils.isEmpty(algorithmConfig.getCrypticAlgorithm())) {
-            return invocation.proceed();
-        }
 
         final String methodName = invocation.getMethod().getName();
         Executor executor = (Executor) invocation.getTarget();
@@ -127,26 +68,29 @@ public class ExecutorInterceptor implements Interceptor {
         //过滤重写方法
         List<Method> methodList = Arrays.stream(methods).filter(m -> StringUtils.equals(m.getName(), methedName)).collect(Collectors.toList());
 
-        if (methodList.size()>0||methedName.indexOf(CrypticConstant._COUNT)>-1){
+        if (CollectionUtils.isNotEmpty(methodList)) {
             //针对pagehelper插件处理
-            if (methedName.indexOf(CrypticConstant._COUNT)>-1){
-                methodList = Arrays.stream(methods).filter(m -> StringUtils.equals(m.getName()+CrypticConstant._COUNT, methedName)).collect(Collectors.toList());
+            if (methedName.indexOf(countSuffix)>-1) {
+                methodList = Arrays.stream(methods).filter(m -> StringUtils.equals(m.getName() + countSuffix, methedName)).collect(Collectors.toList());
             }
             for (int i = 0; i < methodList.size(); i++) {
                 //过滤重写方法
                 if (methodList.size() > 1 && i == 0) {
                     continue;
                 }
+
                 //获取重写方法
                 Method method = methodList.get(0);
+
                 Parameter[] params=method.getParameters();
                 for(Parameter p : params) {
-                    if(!AlgorithmExecutor.isJavaClass(p.getType())||p.getType().getTypeName().indexOf("model")>-1||p.getName().equals("model")||p.getType()== List.class&&p.getDeclaredAnnotation(CrypticField.class)==null){
-                        if(StringUtils.equalsIgnoreCase(CrypticConstant.QUERY, methodName)){
-                            new AlgorithmExecutor(algorithmConfig.getCrypticAlgorithm()).selectField(parameter,CrypticConstant.BEFORE_SELECT);
-                        }else if (StringUtils.equalsIgnoreCase(CrypticConstant.UPDATE, methodName)) {
+                    //判读是否Java基本数据类型 2019.7.10
+                    if (!CrypticParamUtil.isJavaClass(p.getType())||p.getType()== List.class){
+                        if(StringUtils.equalsIgnoreCase(CrypticConst.QUERY, methodName)){
+                            CrypticParamUtil.selectField(parameter, CrypticConst.BEFORE_SELECT);
+                        }else if (StringUtils.equalsIgnoreCase(CrypticConst.UPDATE, methodName)) {
                             // 修改直接返回
-                            new AlgorithmExecutor(algorithmConfig.getCrypticAlgorithm()).updateField(parameter,commandType.name());
+                            CrypticParamUtil.updateField(parameter,commandType.name());
                         }
                     }else {
                         Annotation[] declaredAnnotations=p.getDeclaredAnnotations();
@@ -157,21 +101,23 @@ public class ExecutorInterceptor implements Interceptor {
                                 paramKey[0] =p.getDeclaredAnnotation(Param.class).value();
                             }
                         });
-                        CrypticField annotation=p.getDeclaredAnnotation(CrypticField.class);
+                        Cryptic annotation=p.getDeclaredAnnotation(Cryptic.class);
                         if (annotation!=null) {
-                            if(StringUtils.equalsIgnoreCase(CrypticConstant.QUERY, methodName)){
-                                parameter = mapFieldIsCrypt(parameter, CrypticConstant.BEFORE_SELECT,paramKey[0],annotation);
-                            }else if (StringUtils.equalsIgnoreCase(CrypticConstant.UPDATE, methodName)) {
+                            if(StringUtils.equalsIgnoreCase(CrypticConst.QUERY, methodName)){
+                                parameter = CrypticParamUtil.mapFieldIsCrypt(parameter, CrypticConst.BEFORE_SELECT,paramKey[0],annotation);
+                            }else if (StringUtils.equalsIgnoreCase(CrypticConst.UPDATE, methodName)) {
                                 // 修改直接返回
-                                parameter = mapFieldIsCrypt(parameter, CrypticConstant.UPDATE,paramKey[0],annotation,commandType.name());
+                                parameter = CrypticParamUtil.mapFieldIsCrypt(parameter, CrypticConst.UPDATE,paramKey[0],annotation,commandType.name());
                             }
                         }
                     }
                 }
             }
         }
+        //BoundSql sql = mappedStatement.getBoundSql(parameter);
+        //log.info(sql.getSql());
 
-        if (StringUtils.equalsIgnoreCase(CrypticConstant.UPDATE, methodName)) {
+        if (StringUtils.equalsIgnoreCase(CrypticConst.UPDATE, methodName)) {
             // 修改直接返回
             return executor.update(mappedStatement,parameter);
         }
@@ -207,7 +153,7 @@ public class ExecutorInterceptor implements Interceptor {
             if (null == obj)  // 这里虽然list不是空，但是返回字符串等有可能为空
                 return returnValue;
 
-            new AlgorithmExecutor(algorithmConfig.getCrypticAlgorithm()).selectField(list,CrypticConstant.AFTER_SELECT);
+            CrypticParamUtil.selectField(list, CrypticConst.AFTER_SELECT);
         }
         return returnValue;
     }
@@ -221,4 +167,5 @@ public class ExecutorInterceptor implements Interceptor {
     public void setProperties(Properties properties) {
 
     }
+
 }

@@ -167,34 +167,6 @@ public class UserMapperTest {
         countDownLatch.await();
         executorService.shutdown();
 
-        /*List<String> list = new ArrayList<String>();
-        //数据越大线程越多
-        for (int i = 0; i < 3000000; i++) {
-            list.add("hello"+i);
-        }
-        try {
-            exec(list);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-*/
-
-       /* final AtomicInteger atomic = new AtomicInteger();
-        Runnable task = new Runnable() {
-            @Override
-            public void run() {
-                int i = atomic.getAndAdd(1);
-                User user = User.builder()
-                        .userName("userName" + i).phone("phone" + i)
-                        .build();
-                userService.insert(user);
-            }
-        };
-        ExecutorService executor = Executors.newFixedThreadPool(100);
-        for (int i = 0; i < 100; i++) {
-            executor.execute(task);
-        }
-        Thread.sleep(3000);*/
     }
 
     @Test

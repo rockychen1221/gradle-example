@@ -12,7 +12,7 @@ buildscript {
         lombokVersion = '1.18.2'
         beanutilsVersion = '1.9.3'
     }
-    
+
     dependencies {
         classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
     }
@@ -55,6 +55,8 @@ dependencies {
             'org.bouncycastle:bcpkix-jdk15on:1.57',
             'commons-codec:commons-codec:1.12'
     )
+    compile group: 'org.apache.commons', name: 'commons-collections4', version: '4.4'
+    compile group: 'io.springfox', name: 'springfox-swagger2', version: '2.9.2'
     testCompile('org.springframework.boot:spring-boot-starter-test')
     annotationProcessor 'org.projectlombok:lombok:1.18.2'
     compileOnly 'org.projectlombok:lombok:1.18.2'

@@ -2,7 +2,7 @@ package com.littlefox.example.dao;
 
 import com.littlefox.example.model.User;
 import com.littlefox.generic.GenericMapper;
-import com.littlefox.security.annotation.CrypticField;
+import com.littlefox.security.annotation.Cryptic;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -24,16 +24,16 @@ public interface UserMapper extends GenericMapper<User,String> {
 
     List<User> query();
 
-    User queryByParam(@CrypticField(type = CrypticField.Type.ONLY_ENCRYPT) String id);
+    User queryByParam(@Cryptic String id);
 
     @Override
-    User selectByPrimaryKey(@CrypticField(type = CrypticField.Type.ONLY_ENCRYPT) String id);
+    User selectByPrimaryKey(@Cryptic String id);
 
     @Override
-    int deleteByPrimaryKey(@CrypticField(type = CrypticField.Type.ONLY_ENCRYPT) String id);
+    int deleteByPrimaryKey(@Cryptic String id);
 
-    User query(@CrypticField(type = CrypticField.Type.ONLY_ENCRYPT) @Param("userId") String id);
+    User query(@Cryptic @Param("userId") String id);
 
-    User queryUserRole(@CrypticField(type = CrypticField.Type.ONLY_ENCRYPT) @Param("userId") String id);
+    User queryUserRole(@Cryptic @Param("userId") String id);
 
 }

@@ -1,6 +1,6 @@
 package com.littlefox.example.model;
 
-import com.littlefox.security.annotation.CrypticField;
+import com.littlefox.security.annotation.Cryptic;
 import lombok.*;
 
 import java.util.List;
@@ -17,12 +17,12 @@ import java.util.List;
 @EqualsAndHashCode(callSuper = true)
 public class User extends Person{
 
-    @CrypticField(type = CrypticField.Type.ONLY_ENCRYPT)
+    @Cryptic
     private String id;
 
     private String userName;
 
-    @CrypticField
+    @Cryptic
     private String phone;
 
     private List<Role> roles;

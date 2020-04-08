@@ -1,6 +1,6 @@
 package com.littlefox.example.model;
 
-import com.littlefox.security.annotation.CrypticField;
+import com.littlefox.security.annotation.Cryptic;
 import lombok.*;
 
 /**
@@ -12,7 +12,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Role {
-    @CrypticField(type = CrypticField.Type.ONLY_ENCRYPT)
+    @Cryptic
     private String roleId;
 
     private String userId;
